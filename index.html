@@ -1,0 +1,168 @@
+<<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Liste de clients</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; color: #111; }
+    h1 { font-size: 1.4rem; margin-bottom: 10px; }
+    .controls { margin-bottom: 12px; display:flex; gap:8px; flex-wrap:wrap; }
+    button {
+      background: #2563eb; color: #fff; border: none; padding: 8px 12px;
+      border-radius: 6px; cursor: pointer; font-weight:600;
+    }
+    button.secondary { background: #6b7280; }
+    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    th, td { border: 1px solid #e6e6e6; padding: 8px 6px; text-align: left; font-size: 0.95rem; }
+    th { background: #fafafa; font-weight:700; }
+    input[type="text"], input[type="number"] {
+      width: 100%; box-sizing: border-box; padding:6px; border:1px solid #d1d5db; border-radius:4px;
+      font-size:0.95rem;
+    }
+    .small { width:90px; }
+    .center { text-align:center; }
+    @media (max-width: 720px) {
+      table, thead, tbody, th, td, tr { display: block; }
+      thead { display: none; }
+      tr { margin-bottom: 12px; background: #fff; padding: 8px; border-radius:6px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+      td { border: none; padding: 6px 0; }
+      td::before { font-weight:700; display:inline-block; width:120px; color:#374151; }
+      td[data-label="code"]::before { content: "code: "; }
+      td[data-label="nom"]::before { content: "nom: "; }
+      td[data-label="montant crediter"]::before { content: "montant crediter: "; }
+      td[data-label="%"]::before { content: "%: "; }
+      td[data-label="profit"]::before { content: "profit: "; }
+      td[data-label="rembourse"]::before { content: "rembourse: "; }
+      td[data-label="complement"]::before { content: "complement: "; }
+      td[data-label="franc congo"]::before { content: "franc congo: "; }
+      td[data-label="Colonne1"]::before { content: "Colonne1: "; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Liste de clients</h1>
+
+  <div class="controls">
+    <button id="addRowBtn">+ Ajouter un client</button>
+    <button id="calcBtn" class="secondary">CALCULER</button>
+  </div>
+
+  <table id="clientsTable" aria-label="Tableau clients">
+    <thead>
+      <tr>
+        <th>code</th>
+        <th>nom</th>
+        <th>montant crediter (C)</th>
+        <th>% (D)</th>
+        <th>profit (E = C * D / 100)</th>
+        <th>rembourse (F = C + E)</th>
+        <th>complement</th>
+        <th>franc congo</th>
+        <th>Colonne1</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Une ligne de départ -->
+      <tr>
+        <td data-label="code"><input type="text" class="code" value="C001"></td>
+        <td data-label="nom"><input type="text" class="nom" value="Client 1"></td>
+        <td data-label="montant crediter"><input type="number" class="montant" step="0.01" value="1000"></td>
+        <td data-label="%"><input type="number" class="pourcent" step="0.01" value="5"></td>
+        <td data-label="profit"><input type="number" class="profit" step="0.01" value="50" readonly></td>
+        <td data-label="rembourse"><input type="number" class="rembourse" step="0.01" value="1050" readonly></td>
+        <td data-label="complement"><input type="text" class="complement"></td>
+        <td data-label="franc congo"><input type="text" class="franc"></td>
+        <td data-label="Colonne1"><input type="text" class="col1"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    // Utilitaires
+    function toNumber(v) {
+      const n = parseFloat(v);
+      return isFinite(n) ? n : 0;
+    }
+
+    // Calculer une ligne donnée (tr élément)
+    function calculerLigne(tr) {
+      const montantInput = tr.querySelector('.montant');
+      const pourcentInput = tr.querySelector('.pourcent');
+      const profitInput = tr.querySelector('.profit');
+      const rembourseInput = tr.querySelector('.rembourse');
+
+      const C = toNumber(montantInput.value);
+      const D = toNumber(pourcentInput.value);
+
+      const E = (C * D) / 100;
+      const F = C + E;
+
+      // Arrondir à 2 décimales, mais garder nombre pour input[type=number]
+      profitInput.value = Math.round((E + Number.EPSILON) * 100) / 100;
+      rembourseInput.value = Math.round((F + Number.EPSILON) * 100) / 100;
+    }
+
+    // Attacher événements pour recalcul automatique sur un tr
+    function attacherEvenementsSurLigne(tr) {
+      const montantInput = tr.querySelector('.montant');
+      const pourcentInput = tr.querySelector('.pourcent');
+
+      function onChange() { calculerLigne(tr); }
+
+      montantInput.addEventListener('input', onChange);
+      pourcentInput.addEventListener('input', onChange);
+
+      // Calcul initial pour la ligne
+      calculerLigne(tr);
+    }
+
+    // Ajouter une nouvelle ligne
+    function ajouterLigne(values = {}) {
+      const tbody = document.querySelector('#clientsTable tbody');
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td data-label="code"><input type="text" class="code" value="${values.code || ''}"></td>
+        <td data-label="nom"><input type="text" class="nom" value="${values.nom || ''}"></td>
+        <td data-label="montant crediter"><input type="number" class="montant" step="0.01" value="${values.montant || 0}"></td>
+        <td data-label="%"><input type="number" class="pourcent" step="0.01" value="${values.pourcent || 0}"></td>
+        <td data-label="profit"><input type="number" class="profit" step="0.01" value="0" readonly></td>
+        <td data-label="rembourse"><input type="number" class="rembourse" step="0.01" value="0" readonly></td>
+        <td data-label="complement"><input type="text" class="complement" value="${values.complement || ''}"></td>
+        <td data-label="franc congo"><input type="text" class="franc" value="${values.franc || ''}"></td>
+        <td data-label="Colonne1"><input type="text" class="col1" value="${values.col1 || ''}"></td>
+      `;
+
+      tbody.appendChild(tr);
+      attacherEvenementsSurLigne(tr);
+      tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Calculer tout le tableau
+    function calculerTous() {
+      document.querySelectorAll('#clientsTable tbody tr').forEach(tr => calculerLigne(tr));
+    }
+
+    // Initialisation : attacher sur les lignes existantes
+    document.querySelectorAll('#clientsTable tbody tr').forEach(attacherEvenementsSurLigne);
+
+    // Boutons
+    document.getElementById('addRowBtn').addEventListener('click', () => {
+      ajouterLigne({ code: '', nom: '', montant: 0, pourcent: 0 });
+    });
+
+    document.getElementById('calcBtn').addEventListener('click', () => {
+      calculerTous();
+      // petit feedback visuel
+      const btn = document.getElementById('calcBtn');
+      const old = btn.textContent;
+      btn.textContent = 'OK';
+      setTimeout(() => btn.textContent = old, 700);
+    });
+
+    // Optionnel : recalculer tout au chargement
+    window.addEventListener('load', calculerTous);
+  </script>
+</body>
+</html>
