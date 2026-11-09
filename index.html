@@ -10,7 +10,7 @@ body{font-family:Arial; padding:10px; background:#eef2f7; margin:0}
 .logo{width:55px; height:55px; background:#ff7a00; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; color:white; border:3px solid white}
 .header h1{margin:0; font-size:22px}
 .box{background:white; padding:12px; border-radius:10px; margin:10px 0; text-align:center}
-button{padding:10px 12px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold; cursor:pointer}
+button{padding:12px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold; cursor:pointer; font-size:14px}
 .btnVert{background:#28a745} .btnNoir{background:#222} .btnOrange{background:#2b579a} .btnW{background:#25D366} .btnRecu{background:#6f42c1} .btnRouge{background:#dc3545}
 input,select{padding:7px; border:1px solid #ccc; border-radius:6px; font-size:13px; width:95%}
 table{width:100%; background:white; border-collapse:collapse; margin-top:10px; font-size:12px}
@@ -20,79 +20,36 @@ th{background:#0b2e59; color:white}
 .badgeRetard{background:#dc3545; color:white; padding:3px 6px; border-radius:10px; font-size:11px; font-weight:bold}
 .badgeOK{background:#28a745; color:white; padding:3px 6px; border-radius:10px; font-size:11px}
 #recuBox{display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:999; padding:20px; overflow:auto}
-#debug{background:#d4edda; border:2px solid #28a745; padding:10px; border-radius:10px; margin:10px 0; text-align:center; font-size:14px; font-weight:bold}
+#saveBox{background:#d4edda; border:2px solid #28a745; padding:12px; border-radius:10px; margin:10px 0; text-align:center}
+textarea{width:98%; height:60px; font-size:12px}
 </style>
 </head>
 <body>
 <div class="header"><div class="logo">TI</div><div style="text-align:left"><h1>TABLEUR INFORMATIQUE</h1><p>Lubumbashi - En Dollars $</p></div></div>
-
-<div id="debug">🔍 <span id="debugText">Chargement de la sauvegarde...</span></div>
-
+<div id="saveBox">
+<b>🔒 TA SAUVEGARDE = TON LIEN - ÇA NE PEUT PLUS DISPARAÎTRE</b><br>
+<span id="saveStatus" style="font-size:13px">Ton lien se met à jour tout seul.</span><br>
+<button onclick="copierLien()" class="btnVert" style="font-size:16px; padding:14px">📋 COPIER MON LIEN DE SAUVEGARDE</button><br>
+<p style="font-size:13px">👉 Après avoir copié, <b>envoie-le à toi-même sur WhatsApp</b>.</p>
+<textarea id="lienArea" readonly placeholder="Ton lien va apparaître ici..."></textarea>
+</div>
 <div class="box">
 Capital : <input id="capital" type="number" value="1000" style="width:100px" oninput="calculer()"> $ | % : <input id="pourcGlobal" type="number" value="30" style="width:60px" oninput="changerPourc()"> %<br>
-<b>Total Prêté : <span id="tPrete">0</span> $ | Profit : <span id="tProfit">0</span> $ | À Récupérer : <span id="tReste">0</span> $ | Capital : <span id="tCapital">0</span> $</b><br>
-<span id="saveStatus" style="color:green; font-weight:bold">-</span>
+<b>Total Prêté : <span id="tPrete">0</span> $ | Profit : <span id="tProfit">0</span> $ | À Récupérer : <span id="tReste">0</span> $ | Capital : <span id="tCapital">0</span> $</b>
 </div>
-
 <div class="box">
 <button onclick="ajouter()">+ Ajouter client</button>
-<button onclick="sauvegarder(true)" class="btnVert">💾 SAUVEGARDER</button><br>
-<button onclick="telechargerSauvegarde()" style="background:#6f42c1">⬇️ TÉLÉCHARGER MON FICHIER</button>
-<label style="background:#ff7a00; color:white; padding:10px 12px; border-radius:8px; font-weight:bold; cursor:pointer; display:inline-block; margin:3px">📂 OUVRIR MON FICHIER<input type="file" accept=".json" style="display:none" onchange="restaurerSauvegarde(event)"></label><br>
 <button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER</button>
 <button onclick="exporterWord()" class="btnOrange">📄 WORD</button>
 </div>
-
 <div style="overflow-x:auto"><table id="table"><tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant $</th><th>Date</th><th>Date Limite</th><th>Alerte</th><th>%</th><th>Profit $</th><th>Rembourse $</th><th>Payé $</th><th>Reste $</th><th>Date Remb.</th><th>Statut</th><th>Évolution</th><th>WhatsApp</th><th>Reçu</th><th>X</th></tr></table></div>
-
 <div id="recuBox"><div id="recuContenu"></div><div style="text-align:center"><button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER REÇU</button><button onclick="document.getElementById('recuBox').style.display='none'" class="btnRouge">FERMER</button></div></div>
-
 <script>
-let db=null;
-function openDB(){
-return new Promise((res,rej)=>{
-let req=indexedDB.open("TABLEUR_DB",1);
-req.onupgradeneeded=function(){ req.result.createObjectStore("data"); };
-req.onsuccess=function(){ db=req.result; res(db); };
-req.onerror=function(){ rej(req.error); };
-});
-}
-async function saveToDB(obj){
-try{ await openDB(); let tx=db.transaction("data","readwrite"); tx.objectStore("data").put(obj,"principal"); await new Promise(r=>tx.oncomplete=r); return true; }catch(e){ return false; }
-}
-async function loadFromDB(){
-try{ await openDB(); let tx=db.transaction("data","readonly"); let req=tx.objectStore("data").get("principal"); return await new Promise(r=>{ req.onsuccess=()=>r(req.result); req.onerror=()=>r(null); }); }catch(e){ return null; }
-}
 function collectData(){ let rows=document.querySelectorAll("#table tr"); let data=[]; for(let i=1;i<rows.length;i++){ let r=rows[i]; data.push({code:r.querySelector(".code").value, nom:r.querySelector(".nom").value, tel:r.querySelector(".tel").value, montant:r.querySelector(".montant").value, date:r.querySelector(".date").value, dateLimite:r.querySelector(".dateLimite").value, pourc:r.querySelector(".pourc").value, paye:r.querySelector(".paye").value, dateRemb:r.querySelector(".dateRemb").value, statut:r.querySelector(".statut").value, evol:r.querySelector(".evol").value}); } return data; }
-async function sauvegarder(manuel){
-let data=collectData();
-let obj={clients:data, capital:document.getElementById("capital").value, pourc:document.getElementById("pourcGlobal").value, date:new Date().toISOString()};
-let ok=await saveToDB(obj);
-try{ localStorage.setItem("TABLEUR_FINAL", JSON.stringify(obj)); }catch(e){}
-if(ok){ document.getElementById("saveStatus").innerText="✅ Sauvegardé à "+new Date().toLocaleTimeString('fr-FR')+" - "+data.length+" clients"; document.getElementById("debugText").innerText="✅ SAUVEGARDE OK - "+data.length+" clients en sécurité"; document.getElementById("debug").style.background="#d4edda"; document.getElementById("debug").style.borderColor="#28a745"; if(manuel) alert("✅ SAUVEGARDÉ ! "+data.length+" clients. Tu peux quitter, ça va rester."); }
-else{ document.getElementById("debugText").innerText="⚠️ Sauvegarde téléphone bloquée, utilise le bouton TÉLÉCHARGER"; if(manuel) alert("Utilise le bouton TÉLÉCHARGER pour garder ton fichier."); }
-}
-function telechargerSauvegarde(){ let obj={clients:collectData(), capital:document.getElementById("capital").value, pourc:document.getElementById("pourcGlobal").value}; let blob=new Blob([JSON.stringify(obj)], {type:"application/json"}); let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="mes-clients-tableur.json"; a.click(); alert("✅ Fichier téléchargé !"); }
-function restaurerSauvegarde(e){ let f=e.target.files[0]; if(!f) return; let reader=new FileReader(); reader.onload=async function(){ try{ let obj=JSON.parse(reader.result); document.getElementById("capital").value=obj.capital||1000; document.getElementById("pourcGlobal").value=obj.pourc||30; document.querySelectorAll("#table tr").forEach((r,i)=>{ if(i>0) r.remove(); }); obj.clients.forEach(c=>creerLigne(c)); await calculer(); await sauvegarder(false); alert("✅ "+obj.clients.length+" clients retrouvés !"); }catch(err){ alert("Fichier invalide"); } }; reader.readAsText(f); }
+function updateLien(){ let obj={clients:collectData(), capital:document.getElementById("capital").value, pourc:document.getElementById("pourcGlobal").value}; try{ let code=btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); let base=window.location.origin + window.location.pathname; let lien=base + "#"+code; document.getElementById("lienArea").value=lien; history.replaceState(null,"", lien); document.getElementById("saveStatus").innerText="✅ Lien mis à jour à "+new Date().toLocaleTimeString('fr-FR')+" - "+obj.clients.length+" clients dans le lien"; }catch(e){} }
+function copierLien(){ updateLien(); let t=document.getElementById("lienArea"); t.select(); document.execCommand("copy"); if(navigator.clipboard) navigator.clipboard.writeText(t.value); alert("✅ LIEN COPIÉ ! Maintenant va sur WhatsApp, envoie ce lien à TOI-MÊME."); }
 function creerLigne(c={}){ let tr=document.createElement("tr"); let pourc=c.pourc!==undefined?c.pourc:(document.getElementById("pourcGlobal").value||30); tr.innerHTML=`<td><input class="code" value="${c.code||''}" placeholder="C001" oninput="calculer()"></td><td><input class="nom" value="${c.nom||''}" placeholder="Nom" oninput="calculer()"></td><td><input class="tel" value="${c.tel||''}" placeholder="097..." oninput="calculer()"></td><td><input class="montant" type="number" value="${c.montant||''}" placeholder="0" oninput="calculer()"></td><td><input class="date" type="date" value="${c.date||''}" oninput="calculer()"></td><td><input class="dateLimite" type="date" value="${c.dateLimite||''}" oninput="calculer()"></td><td class="alerte">-</td><td><input class="pourc" type="number" value="${pourc}" oninput="calculer()" style="width:50px">%</td><td class="profit">0</td><td class="remb">0</td><td><input class="paye" type="number" value="${c.paye||0}" oninput="calculer()"></td><td class="reste">0</td><td><input class="dateRemb" type="date" value="${c.dateRemb||''}" oninput="calculer()"></td><td><select class="statut" onchange="calculer()"><option>Non payé</option><option>Payé partiel</option><option>Payé</option></select></td><td><select class="evol" onchange="calculer()"><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></td><td><button class="btnW" onclick="whatsapp(this)">💬</button></td><td><button class="btnRecu" onclick="voirRecu(this)">🧾</button></td><td><button class="btnRouge" onclick="supprimer(this)">X</button></td>`; document.getElementById("table").appendChild(tr); if(c.statut) tr.querySelector(".statut").value=c.statut; if(c.evol) tr.querySelector(".evol").value=c.evol; }
 function changerPourc(){ let v=document.getElementById("pourcGlobal").value||30; document.querySelectorAll(".pourc").forEach(i=>i.value=v); calculer(); }
 function ajouter(){ creerLigne({}); calculer(); }
 function supprimer(btn){ if(confirm("Supprimer ?")){ btn.closest("tr").remove(); calculer(); } }
-async function calculer(){ let rows=document.querySelectorAll("#table tr"); let totPrete=0, totProfit=0, totReste=0; let aujourd=new Date(); aujourd.setHours(0,0,0,0); for(let i=1;i<rows.length;i++){ let r=rows[i]; let montant=Number(r.querySelector(".montant").value||0); let pourc=Number(r.querySelector(".pourc").value||30); let paye=Number(r.querySelector(".paye").value||0); let profit=Math.round(montant*pourc/100); let remb=montant+profit; let reste=remb-paye; r.querySelector(".profit").innerText=profit; r.querySelector(".remb").innerText=remb; r.querySelector(".reste").innerText=reste; let lim=r.querySelector(".dateLimite").value; let al=r.querySelector(".alerte"); if(lim && reste>0 && new Date(lim)<aujourd){ al.innerHTML='<span class="badgeRetard">EN RETARD</span>'; r.classList.add("retard"); } else if(reste<=0){ al.innerHTML='<span class="badgeOK">OK</span>'; r.classList.remove("retard"); } else { al.innerHTML='-'; r.classList.remove("retard"); } totPrete+=montant; totProfit+=profit; totReste+=reste; } let capital=Number(document.getElementById("capital").value||0); document.getElementById("tPrete").innerText=totPrete; document.getElementById("tProfit").innerText=totProfit; document.getElementById("tReste").innerText=totReste; document.getElementById("tCapital").innerText=capital+totProfit; await sauvegarder(false); }
-function whatsapp(btn){ let r=btn.closest("tr"); let nom=r.querySelector(".nom").value||"Client"; let tel=r.querySelector(".tel").value||""; let reste=r.querySelector(".reste").innerText; let lim=r.querySelector(".dateLimite").value||""; let tc=tel.replace(/[^0-9]/g,""); if(tc.startsWith("0")) tc="243"+tc.substring(1); window.open("https://wa.me/"+tc+"?text="+encodeURIComponent(`Bonjour ${nom}, c'est TABLEUR INFORMATIQUE. Rappel : il vous reste $ ${reste} à payer. Date limite : ${lim}. Merci.`), "_blank"); }
-function voirRecu(btn){ let r=btn.closest("tr"); document.getElementById("recuContenu").innerHTML=`<div style="max-width:500px; margin:auto; border:2px solid #0b2e59; padding:20px;"><h2 style="text-align:center; color:#0b2e59">TABLEUR INFORMATIQUE - Reçu</h2><p>Client : ${r.querySelector(".nom").value} - Tel : ${r.querySelector(".tel").value}</p><p>Montant : $ ${r.querySelector(".montant").value} | Profit : $ ${r.querySelector(".profit").innerText} | Total : $ ${r.querySelector(".remb").innerText}</p><p>Payé : $ ${r.querySelector(".paye").value} | Reste : $ ${r.querySelector(".reste").innerText}</p><p>Signature : _______________</p></div>`; document.getElementById("recuBox").style.display="block"; }
-function exporterWord(){ let rows=document.querySelectorAll("#table tr"); let lignes=""; for(let i=1;i<rows.length;i++){ let r=rows[i]; lignes+=`<tr><td>${r.querySelector(".code").value}</td><td>${r.querySelector(".nom").value}</td><td>${r.querySelector(".tel").value}</td><td>$ ${r.querySelector(".montant").value}</td><td>$ ${r.querySelector(".remb").innerText}</td><td>$ ${r.querySelector(".reste").innerText}</td></tr>`; } let html=`<html><body><h1>TABLEUR INFORMATIQUE</h1><table border='1'><tr><th>Code</th><th>Nom</th><th>Tel</th><th>Montant</th><th>Rembourse</th><th>Reste</th></tr>${lignes}</table></body></html>`; let blob=new Blob(['\ufeff', html], {type:'application/msword'}); let url=URL.createObjectURL(blob); let a=document.createElement("a"); a.href=url; a.download="TABLEUR-Clients.doc"; a.click(); window.open(url,'_blank'); }
-window.onload=async function(){
-let sauve=await loadFromDB();
-if(!sauve){ try{ sauve=JSON.parse(localStorage.getItem("TABLEUR_FINAL")); }catch(e){} }
-if(sauve && sauve.clients && sauve.clients.length>0){
-document.getElementById("capital").value=sauve.capital||1000;
-document.getElementById("pourcGlobal").value=sauve.pourc||30;
-sauve.clients.forEach(c=>creerLigne(c));
-document.getElementById("debugText").innerText="✅ "+sauve.clients.length+" clients retrouvés ! Sauvegarde OK.";
-} else { creerLigne({}); document.getElementById("debugText").innerText="ℹ️ Aucune sauvegarde. Mets un client et clique SAUVEGARDER."; }
-await calculer();
-};
-</script>
-</body>
-</html>
+function calculer(){ let rows=document.querySelectorAll("#table tr"); let totPrete=0, totProfit=0, totReste=0; let aujourd=new Date(); aujourd.setHours(0,0,0,0); for(let i=1;i<rows.length;i++){ let r=rows[i]; let montant=Number(r.querySelector(".montant").value||0); let pourc=Number(r.querySelector(".pourc").value||30); let paye=Number(r.querySelector(".paye").value||0); let profit=Math.round(montant*pourc/100); let remb=montant+profit; let reste=remb-paye; r.querySelector(".profit").innerText=profit; r.querySelector(".remb").innerText=
