@@ -19,23 +19,10 @@ th,td{border:1px solid #ddd; padding:6px; text-align:center}
 th{background:#0b2e59; color:white}
 .total td{background:#d9e8ff; font-weight:bold; font-size:14px}
 .bon{background:#d4edda} .moyen{background:#fff3cd} .mauvais{background:#f8d7da}
-#lock{position:fixed; top:0; left:0; width:100%; height:100%; background:#0b2e59; display:flex; align-items:center; justify-content:center; z-index:999}
-#lock div{background:white; padding:25px; border-radius:12px; text-align:center; width:85%; max-width:320px}
-#lock input{width:90%; text-align:center; font-size:18px; letter-spacing:3px}
 @media print{ .no-print{display:none !important} body{background:white} .box{box-shadow:none} }
 </style>
 </head>
 <body>
-
-<div id="lock">
-<div>
-<h2>🔒 TABLEUR<br>INFORMATIQUE</h2>
-<p>Entre le mot de passe</p>
-<input id="mdp" type="password" placeholder="3274" inputmode="numeric"><br><br>
-<button onclick="deverrouiller()">ENTRER</button>
-<p id="msgMdp" style="color:red"></p>
-</div>
-</div>
 
 <div class="header no-print">
 <h1>TABLEUR INFORMATIQUE</h1>
@@ -71,11 +58,6 @@ Pourcentage de départ : <input id="pourcGlobal" type="number" value="30" style=
 
 <script>
 let n=0;
-const MDP="3274";
-function deverrouiller(){
-if(document.getElementById("mdp").value==MDP){ document.getElementById("lock").style.display="none"; }
-else{ document.getElementById("msgMdp").innerText="Mot de passe faux !"; }
-}
 function creerLigne(c={}){
 n++;
 let tr=document.createElement("tr");
@@ -127,4 +109,42 @@ document.getElementById("tPrete").innerText=totPrete;
 document.getElementById("tProfit").innerText=totProfit;
 document.getElementById("tRemb").innerText=totRemb;
 document.getElementById("tCapital").innerText=capital+totProfit;
-document.getElementById("ftPrete").innerText=
+document.getElementById("ftPrete").innerText=totPrete;
+document.getElementById("ftProfit").innerText=totProfit;
+document.getElementById("ftRemb").innerText=totRemb;
+document.getElementById("ftPaye").innerText=totPaye;
+document.getElementById("ftReste").innerText=totReste;
+let ev=document.getElementById("evolCapital");
+if(totProfit>0){ ev.innerText="📈 CAPITAL AGRANDIT +"+totProfit+" FC"; ev.className="vert"; } else { ev.innerText="➖ CAPITAL STABLE"; ev.className=""; }
+localStorage.setItem("clients_pro",JSON.stringify(data));
+localStorage.setItem("capital_pro",capital);
+localStorage.setItem("pourc_pro",document.getElementById("pourcGlobal").value);
+}
+function exporterWord(){
+let capital=document.getElementById("capital").value;
+let totPrete=document.getElementById("tPrete").innerText;
+let totProfit=document.getElementById("tProfit").innerText;
+let totRemb=document.getElementById("tRemb").innerText;
+let rows=document.querySelectorAll("#table tr");
+let lignes="";
+for(let i=1;i<rows.length;i++){
+let r=rows[i];
+lignes+=`<tr><td>${r.querySelector(".code").value}</td><td>${r.querySelector(".nom").value}</td><td>${r.querySelector(".tel").value}</td><td>${r.querySelector(".montant").value}</td><td>${r.querySelector(".date").value}</td><td>${r.querySelector(".pourc").value}%</td><td>${r.querySelector(".profit").innerText}</td><td>${r.querySelector(".remb").innerText}</td><td>${r.querySelector(".paye").value}</td><td>${r.querySelector(".reste").innerText}</td><td>${r.querySelector(".dateRemb").value}</td><td>${r.querySelector(".statut").value}</td><td>${r.querySelector(".evol").value}</td></tr>`;
+}
+let html=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>TABLEUR INFORMATIQUE</title></head><body style='font-family:Arial'><h1 style='text-align:center; color:#0b2e59'>TABLEUR INFORMATIQUE</h1><p style='text-align:center'>Gestion des Crédits Clients - Lubumbashi - Date : ${new Date().toLocaleDateString('fr-FR')}</p><p><b>Capital de départ :</b> ${capital} FC | <b>Total Prêté :</b> ${totPrete} FC | <b>Total Profit :</b> ${totProfit} FC | <b>Total Rembourse :</b> ${totRemb} FC</p><table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%; font-size:12px'><tr style='background:#0b2e59; color:white'><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant</th><th>Date</th><th>%</th><th>Profit</th><th>Rembourse</th><th>Payé</th><th>Reste</th><th>Date Remb.</th><th>Statut</th><th>Évolution</th></tr>${lignes}</table><br><p>© TABLEUR INFORMATIQUE</p></body></html>`;
+let blob=new Blob(['\ufeff', html], {type:'application/msword'});
+let url=URL.createObjectURL(blob);
+let a=document.createElement("a"); a.href=url; a.download="TABLEUR-INFORMATIQUE-Clients.doc"; a.click();
+window.open(url, '_blank');
+}
+function filtrer(){ let mot=document.getElementById("recherche").value.toLowerCase(); let rows=document.querySelectorAll("#table tr"); for(let i=1;i<rows.length;i++){ let r=rows[i]; let txt=r.querySelector(".nom").value.toLowerCase()+" "+r.querySelector(".code").value.toLowerCase()+" "+r.querySelector(".tel").value.toLowerCase(); r.style.display=txt.includes(mot)?"":"none"; } }
+window.onload=function(){
+let cap=localStorage.getItem("capital_pro"); if(cap) document.getElementById("capital").value=cap;
+let pf=localStorage.getItem("pourc_pro"); if(pf) document.getElementById("pourcGlobal").value=pf;
+let sauve=localStorage.getItem("clients_pro");
+if(sauve && JSON.parse(sauve).length>0){ JSON.parse(sauve).forEach(c=>creerLigne(c)); } else { creerLigne({}); }
+calculer();
+}
+</script>
+</body>
+</html>
