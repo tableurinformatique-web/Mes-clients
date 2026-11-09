@@ -3,44 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liste de clients</title>
+<title>TABLEUR INFORMATIQUE - Liste de clients</title>
 <style>
-body{font-family:Arial; padding:12px; background:#f2f2f2}
-h2{text-align:center}
-.box{background:white; padding:12px; border-radius:10px; margin-bottom:10px; text-align:center}
+body{font-family:Arial; padding:12px; background:#eef2f7; margin:0}
+.header{background:#0b2e59; color:white; padding:15px; text-align:center; border-radius:10px}
+.header h1{margin:0; font-size:22px}
+.header p{margin:3px; font-size:13px}
+.box{background:white; padding:12px; border-radius:10px; margin:12px 0; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.1)}
 .vert{color:green} .rouge{color:red}
-button{padding:10px 14px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold}
-.btnRouge{background:#dc3545} .btnVert{background:#28a745}
+button{padding:10px 13px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold; cursor:pointer}
+.btnRouge{background:#dc3545} .btnVert{background:#28a745} .btnNoir{background:#222} .btnOrange{background:#2b579a}
 input,select{padding:7px; border:1px solid #ccc; border-radius:6px; font-size:14px; width:95%}
-table{width:100%; background:white; border-collapse:collapse; margin-top:10px}
-th,td{border:1px solid #ddd; padding:6px; text-align:center; font-size:13px}
-th{background:#007bff; color:white}
-.total td{background:#e9f5ff; font-weight:bold}
+table{width:100%; background:white; border-collapse:collapse; margin-top:10px; font-size:13px}
+th,td{border:1px solid #ddd; padding:6px; text-align:center}
+th{background:#0b2e59; color:white}
+.total td{background:#d9e8ff; font-weight:bold; font-size:14px}
 .bon{background:#d4edda} .moyen{background:#fff3cd} .mauvais{background:#f8d7da}
+#lock{position:fixed; top:0; left:0; width:100%; height:100%; background:#0b2e59; display:flex; align-items:center; justify-content:center; z-index:999}
+#lock div{background:white; padding:25px; border-radius:12px; text-align:center; width:85%; max-width:320px}
+#lock input{width:90%; text-align:center; font-size:18px; letter-spacing:3px}
+@media print{ .no-print{display:none !important} body{background:white} .box{box-shadow:none} }
 </style>
 </head>
 <body>
-<h2>Liste de clients</h2>
+
+<div id="lock">
+<div>
+<h2>🔒 TABLEUR<br>INFORMATIQUE</h2>
+<p>Entre le mot de passe</p>
+<input id="mdp" type="password" placeholder="****" inputmode="numeric"><br><br>
+<button onclick="deverrouiller()">ENTRER</button>
+<p id="msgMdp" style="color:red"></p>
+</div>
+</div>
+
+<div class="header no-print">
+<h1>TABLEUR INFORMATIQUE</h1>
+<p>Gestion des Crédits Clients - Lubumbashi</p>
+</div>
 
 <div class="box">
-Capital de départ : <input id="capital" type="number" value="100000" style="width:110px" oninput="calculer()"><br>
+Capital de départ : <input id="capital" type="number" value="100000" style="width:110px" oninput="calculer()"> FC<br>
 Pourcentage de départ : <input id="pourcGlobal" type="number" value="30" style="width:60px" oninput="changerPourc()"> %<br><br>
-<b>Total Prêté : <span id="tPrete">0</span></b> | <b>Profit : <span id="tProfit">0</span></b> | <b>Capital Actuel : <span id="tCapital">0</span></b><br>
+<b>Total Prêté : <span id="tPrete">0</span> FC</b> | <b>Total Profit : <span id="tProfit">0</span> FC</b> | <b>Total Rembourse : <span id="tRemb">0</span> FC</b><br>
+<b>Capital Actuel : <span id="tCapital">0</span> FC</b><br>
 <b id="evolCapital" class="vert">📈 CAPITAL AGRANDIT</b>
 </div>
 
-<div class="box">
-🔍 Recherche : <input id="recherche" placeholder="Nom ou téléphone..." oninput="filtrer()" style="width:80%"><br><br>
+<div class="box no-print">
+🔍 Recherche : <input id="recherche" placeholder="Nom, Code ou Téléphone..." oninput="filtrer()" style="width:80%"><br><br>
 <button onclick="ajouter()">+ Ajouter une ligne vide</button>
-<button onclick="calculer()" class="btnVert">CALCULER + SAUVEGARDER</button>
+<button onclick="calculer()" class="btnVert">CALCULER + SAUVEGARDER</button><br>
+<button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER / PDF</button>
+<button onclick="exporterWord()" class="btnOrange">📄 EXPORTER VERS WORD</button>
 </div>
 
+<div style="overflow-x:auto">
 <table id="table">
-<tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant crédité</th><th>Date</th><th>%</th><th>Profit</th><th>Rembourse</th><th>Statut</th><th>Évolution Client</th><th>Supprimer</th></tr>
+<tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant crédité</th><th>Date crédit</th><th>%</th><th>Profit</th><th>Rembourse</th><th>Montant Payé</th><th>Reste à payer</th><th>Date Remboursement</th><th>Statut</th><th>Évolution Client</th><th class="no-print">Supprimer</th></tr>
 </table>
+</div>
+
+<table style="margin-top:0">
+<tr class="total"><td>TOTAL</td><td id="ftPrete">0</td><td id="ftProfit">0</td><td id="ftRemb">0</td><td id="ftPaye">0</td><td id="ftReste">0</td></tr>
+</table>
+<p style="text-align:center; font-size:12px; color:#666">© TABLEUR INFORMATIQUE - Tous droits réservés</p>
 
 <script>
 let n=0;
+const MDP="3274";
+function deverrouiller(){
+if(document.getElementById("mdp").value==MDP){ document.getElementById("lock").style.display="none"; }
+else{ document.getElementById("msgMdp").innerText="Mot de passe faux !"; }
+}
 function creerLigne(c={}){
 n++;
 let tr=document.createElement("tr");
@@ -54,9 +89,12 @@ tr.innerHTML=`
 <td><input class="pourc" type="number" value="${pourc}" oninput="calculer()" style="width:60px">%</td>
 <td class="profit">0</td>
 <td class="remb">0</td>
+<td><input class="paye" type="number" value="${c.paye||0}" placeholder="0" oninput="calculer()"></td>
+<td class="reste">0</td>
+<td><input class="dateRemb" type="date" value="${c.dateRemb||''}" oninput="calculer()"></td>
 <td><select class="statut" onchange="calculer()"><option>Non payé</option><option>Payé partiel</option><option>Payé</option></select></td>
 <td><select class="evol" onchange="colorEvol(this);calculer()"><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></td>
-<td><button class="btnRouge" onclick="supprimer(this)">X</button></td>`;
+<td class="no-print"><button class="btnRouge" onclick="supprimer(this)">X</button></td>`;
 document.getElementById("table").appendChild(tr);
 if(c.statut) tr.querySelector(".statut").value=c.statut;
 if(c.evol) tr.querySelector(".evol").value=c.evol;
@@ -65,39 +103,28 @@ colorEvol(tr.querySelector(".evol"));
 function changerPourc(){ let v=document.getElementById("pourcGlobal").value||30; document.querySelectorAll(".pourc").forEach(i=>i.value=v); calculer(); }
 function colorEvol(sel){ sel.classList.remove("bon","moyen","mauvais"); if(sel.value=="Bon") sel.classList.add("bon"); if(sel.value=="Moyen") sel.classList.add("moyen"); if(sel.value=="Mauvais") sel.classList.add("mauvais"); }
 function ajouter(){ creerLigne({}); calculer(); }
-function supprimer(btn){ if(confirm("Supprimer ?")){ btn.closest("tr").remove(); calculer(); } }
+function supprimer(btn){ if(confirm("Supprimer ce client ?")){ btn.closest("tr").remove(); calculer(); } }
 function calculer(){
 let rows=document.querySelectorAll("#table tr");
-let totPrete=0, totProfit=0, data=[];
+let totPrete=0, totProfit=0, totRemb=0, totPaye=0, totReste=0, data=[];
 for(let i=1;i<rows.length;i++){
 let r=rows[i];
 let montant=Number(r.querySelector(".montant").value||0);
 let pourc=Number(r.querySelector(".pourc").value||30);
+let paye=Number(r.querySelector(".paye").value||0);
 let profit=Math.round(montant*pourc/100);
+let remb=montant+profit;
+let reste=remb-paye;
 r.querySelector(".profit").innerText=profit;
-r.querySelector(".remb").innerText=montant+profit;
-totPrete+=montant; totProfit+=profit;
-data.push({code:r.querySelector(".code").value, nom:r.querySelector(".nom").value, tel:r.querySelector(".tel").value, montant:montant, date:r.querySelector(".date").value, pourc:pourc, statut:r.querySelector(".statut").value, evol:r.querySelector(".evol").value});
+r.querySelector(".remb").innerText=remb;
+r.querySelector(".reste").innerText=reste;
+r.querySelector(".reste").style.color=reste<=0?"green":"red";
+totPrete+=montant; totProfit+=profit; totRemb+=remb; totPaye+=paye; totReste+=reste;
+data.push({code:r.querySelector(".code").value, nom:r.querySelector(".nom").value, tel:r.querySelector(".tel").value, montant:montant, date:r.querySelector(".date").value, pourc:pourc, paye:paye, dateRemb:r.querySelector(".dateRemb").value, statut:r.querySelector(".statut").value, evol:r.querySelector(".evol").value});
 }
 let capital=Number(document.getElementById("capital").value||0);
 document.getElementById("tPrete").innerText=totPrete;
 document.getElementById("tProfit").innerText=totProfit;
+document.getElementById("tRemb").innerText=totRemb;
 document.getElementById("tCapital").innerText=capital+totProfit;
-let ev=document.getElementById("evolCapital");
-if(totProfit>0){ ev.innerText="📈 CAPITAL AGRANDIT +"+totProfit; ev.className="vert"; }
-else if(totProfit==0){ ev.innerText="➖ CAPITAL STABLE"; ev.className=""; }
-localStorage.setItem("clients_final",JSON.stringify(data));
-localStorage.setItem("capital_final",capital);
-localStorage.setItem("pourc_final",document.getElementById("pourcGlobal").value);
-}
-function filtrer(){ let mot=document.getElementById("recherche").value.toLowerCase(); let rows=document.querySelectorAll("#table tr"); for(let i=1;i<rows.length;i++){ rows[i].style.display=rows[i].innerText.toLowerCase().includes(mot)||rows[i].querySelector(".nom").value.toLowerCase().includes(mot)?"":"none"; } }
-window.onload=function(){
-let cap=localStorage.getItem("capital_final"); if(cap) document.getElementById("capital").value=cap;
-let pf=localStorage.getItem("pourc_final"); if(pf) document.getElementById("pourcGlobal").value=pf;
-let sauve=localStorage.getItem("clients_final");
-if(sauve && JSON.parse(sauve).length>0){ JSON.parse(sauve).forEach(c=>creerLigne(c)); } else { creerLigne({}); }
-calculer();
-}
-</script>
-</body>
-</html>
+document.getElementById("ftPrete").innerText=
