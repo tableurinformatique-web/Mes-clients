@@ -71,7 +71,10 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <button onclick="ajouter()">+ Ajouter client</button>
 <button onclick="calculer()" class="btnVert">CALCULER + SAUVEGARDER</button><br>
 <button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER / PDF</button>
-<button onclick="exporterWord()" class="btnOrange">📄 EXPORTER VERS WORD</button>
+<button onclick="exporterWord()" class="btnOrange">📄 EXPORTER VERS WORD</button><br>
+<button onclick="telechargerSauvegarde()" class="btnVert" style="background:#0b2e59">💾 TÉLÉCHARGER LA SAUVEGARDE</button>
+<button onclick="document.getElementById('fichierSauvegarde').click()" class="btnRecu">📂 CHARGER UNE SAUVEGARDE</button>
+<input type="file" id="fichierSauvegarde" accept=".json" onchange="chargerSauvegarde(event)" style="display:none">
 </div>
 <div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
 
@@ -271,6 +274,73 @@ let a=document.createElement("a"); a.href=url; a.download="TABLEUR-INFORMATIQUE-
 window.open(url, '_blank');
 }
 function filtrer(){ let mot=document.getElementById("recherche").value.toLowerCase(); let rows=document.querySelectorAll("#table tr"); for(let i=1;i<rows.length;i++){ let r=rows[i]; let txt=r.querySelector(".nom").value.toLowerCase()+" "+r.querySelector(".code").value.toLowerCase()+" "+r.querySelector(".tel").value.toLowerCase(); r.style.display=txt.includes(mot)?"":"none"; } }
+
+/* ===== TELECHARGER LA SAUVEGARDE ===== */
+function telechargerSauvegarde(){
+  let rows = document.querySelectorAll("#table tr");
+  let data = [];
+  for(let i=1; i<rows.length; i++){
+    let r = rows[i];
+    data.push({
+      code: r.querySelector(".code").value,
+      nom: r.querySelector(".nom").value,
+      tel: r.querySelector(".tel").value,
+      montant: r.querySelector(".montant").value,
+      date: r.querySelector(".date").value,
+      dateLimite: r.querySelector(".dateLimite").value,
+      pourc: r.querySelector(".pourc").value,
+      paye: r.querySelector(".paye").value,
+      dateRemb: r.querySelector(".dateRemb").value,
+      statut: r.querySelector(".statut").value,
+      evol: r.querySelector(".evol").value
+    });
+  }
+  let sauvegardeComplete = {
+    capital: document.getElementById("capital").value,
+    pourcentage: document.getElementById("pourcGlobal").value,
+    clients: data,
+    dateSauvegarde: new Date().toLocaleString('fr-FR')
+  };
+  let texte = JSON.stringify(sauvegardeComplete, null, 2);
+  let blob = new Blob([texte], {type: 'application/json'});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  let dateJour = new Date().toISOString().split('T')[0];
+  a.download = "SAUVEGARDE-TABLEUR-" + dateJour + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+  alert("✅ Sauvegarde téléchargée ! Gardez ce fichier en sécurité.");
+}
+
+/* ===== CHARGER UNE SAUVEGARDE ===== */
+function chargerSauvegarde(event){
+  let fichier = event.target.files[0];
+  if(!fichier){ return; }
+  let lecteur = new FileReader();
+  lecteur.onload = function(e){
+    try {
+      let contenu = JSON.parse(e.target.result);
+      if(!contenu.clients){ alert("❌ Fichier invalide."); return; }
+      if(!confirm("⚠️ Cela va remplacer toutes les données actuelles. Continuer ?")) return;
+      
+      let table = document.getElementById("table");
+      while(table.rows.length > 1){ table.deleteRow(1); }
+      
+      if(contenu.capital) document.getElementById("capital").value = contenu.capital;
+      if(contenu.pourcentage) document.getElementById("pourcGlobal").value = contenu.pourcentage;
+      
+      contenu.clients.forEach(c => creerLigne(c));
+      calculer();
+      sauvegarderMaintenant();
+      alert("✅ Sauvegarde restaurée avec succès ! (" + contenu.clients.length + " clients)");
+    } catch(err){
+      alert("❌ Erreur : le fichier n'est pas valide.");
+    }
+    event.target.value = "";
+  };
+  lecteur.readAsText(fichier);
+}
 
 /* ===== DEMARRAGE ===== */
 window.onload=function(){
