@@ -6,17 +6,16 @@
 <title>Liste de clients</title>
 <style>
 body{font-family:Arial; padding:12px; background:#f2f2f2}
-h2{text-align:center; margin:5px}
-.box{background:white; padding:10px; border-radius:10px; margin-bottom:10px; text-align:center}
-.box b{font-size:16px}
+h2{text-align:center}
+.box{background:white; padding:12px; border-radius:10px; margin-bottom:10px; text-align:center}
 .vert{color:green} .rouge{color:red}
-button{padding:9px 12px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold}
+button{padding:10px 14px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold}
 .btnRouge{background:#dc3545} .btnVert{background:#28a745}
-input,select{width:95%; padding:6px; border:1px solid #ccc; border-radius:5px; font-size:14px}
+input,select{padding:7px; border:1px solid #ccc; border-radius:6px; font-size:14px; width:95%}
 table{width:100%; background:white; border-collapse:collapse; margin-top:10px}
 th,td{border:1px solid #ddd; padding:6px; text-align:center; font-size:13px}
 th{background:#007bff; color:white}
-.total td{background:#e9f5ff; font-weight:bold; font-size:14px}
+.total td{background:#e9f5ff; font-weight:bold}
 .bon{background:#d4edda} .moyen{background:#fff3cd} .mauvais{background:#f8d7da}
 </style>
 </head>
@@ -24,30 +23,20 @@ th{background:#007bff; color:white}
 <h2>Liste de clients</h2>
 
 <div class="box">
-Capital de départ : <input id="capital" type="number" value="100000" style="width:120px" oninput="calculer()">
-<br><br>
-<b>Total Prêté : <span id="tPrete">0</span> FC</b> | 
-<b>Total Profit : <span id="tProfit">0</span> FC</b> |
-<b>Capital Actuel : <span id="tCapital">0</span> FC</b>
-<br><br>
+Capital de départ : <input id="capital" type="number" value="100000" style="width:110px" oninput="calculer()"><br>
+Pourcentage de départ : <input id="pourcGlobal" type="number" value="30" style="width:60px" oninput="changerPourc()"> %<br><br>
+<b>Total Prêté : <span id="tPrete">0</span></b> | <b>Profit : <span id="tProfit">0</span></b> | <b>Capital Actuel : <span id="tCapital">0</span></b><br>
 <b id="evolCapital" class="vert">📈 CAPITAL AGRANDIT</b>
 </div>
 
 <div class="box">
-🔍 Recherche : <input id="recherche" placeholder="Tape le nom ou téléphone..." oninput="filtrer()" style="width:80%">
-<br><br>
-<button onclick="ajouter()">+ Ajouter un client</button>
+🔍 Recherche : <input id="recherche" placeholder="Nom ou téléphone..." oninput="filtrer()" style="width:80%"><br><br>
+<button onclick="ajouter()">+ Ajouter une ligne vide</button>
 <button onclick="calculer()" class="btnVert">CALCULER + SAUVEGARDER</button>
 </div>
 
 <table id="table">
-<tr>
-<th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant</th><th>Date</th><th>5%</th><th>Profit</th><th>Rembourse</th><th>Statut</th><th>Évolution Client</th><th>Supprimer</th>
-</tr>
-</table>
-
-<table style="margin-top:0">
-<tr class="total"><td>TOTAL</td><td id="ftPrete">0</td><td id="ftProfit">0</td><td id="ftRemb">0</td></tr>
+<tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant crédité</th><th>Date</th><th>%</th><th>Profit</th><th>Rembourse</th><th>Statut</th><th>Évolution Client</th><th>Supprimer</th></tr>
 </table>
 
 <script>
@@ -55,74 +44,58 @@ let n=0;
 function creerLigne(c={}){
 n++;
 let tr=document.createElement("tr");
+let pourc=c.pourc!==undefined?c.pourc:(document.getElementById("pourcGlobal").value||30);
 tr.innerHTML=`
-<td>C${String(n).padStart(3,'0')}</td>
+<td><input class="code" value="${c.code||''}" placeholder="C001" oninput="calculer()"></td>
 <td><input class="nom" value="${c.nom||''}" placeholder="Nom" oninput="calculer()"></td>
 <td><input class="tel" value="${c.tel||''}" placeholder="097..." oninput="calculer()"></td>
-<td><input class="montant" type="number" value="${c.montant||0}" oninput="calculer()"></td>
+<td><input class="montant" type="number" value="${c.montant||''}" placeholder="Montant" oninput="calculer()"></td>
 <td><input class="date" type="date" value="${c.date||''}" oninput="calculer()"></td>
-<td class="p5">0</td>
+<td><input class="pourc" type="number" value="${pourc}" oninput="calculer()" style="width:60px">%</td>
 <td class="profit">0</td>
 <td class="remb">0</td>
-<td><select class="statut" onchange="calculer()"><option ${c.statut=='Non payé'?'selected':''}>Non payé</option><option ${c.statut=='Payé partiel'?'selected':''}>Payé partiel</option><option ${c.statut=='Payé'?'selected':''}>Payé</option></select></td>
-<td><select class="evol" onchange="colorEvol(this);calculer()"><option ${c.evol=='Bon'?'selected':''}>Bon</option><option ${c.evol=='Moyen'?'selected':''}>Moyen</option><option ${c.evol=='Mauvais'?'selected':''}>Mauvais</option></select></td>
+<td><select class="statut" onchange="calculer()"><option>Non payé</option><option>Payé partiel</option><option>Payé</option></select></td>
+<td><select class="evol" onchange="colorEvol(this);calculer()"><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></td>
 <td><button class="btnRouge" onclick="supprimer(this)">X</button></td>`;
 document.getElementById("table").appendChild(tr);
+if(c.statut) tr.querySelector(".statut").value=c.statut;
+if(c.evol) tr.querySelector(".evol").value=c.evol;
 colorEvol(tr.querySelector(".evol"));
 }
-function colorEvol(sel){
-sel.classList.remove("bon","moyen","mauvais");
-if(sel.value=="Bon") sel.classList.add("bon");
-if(sel.value=="Moyen") sel.classList.add("moyen");
-if(sel.value=="Mauvais") sel.classList.add("mauvais");
-}
-function ajouter(){ creerLigne({date:new Date().toISOString().slice(0,10)}); calculer(); }
-function supprimer(btn){ if(confirm("Supprimer ce client ?")){ btn.closest("tr").remove(); calculer(); } }
+function changerPourc(){ let v=document.getElementById("pourcGlobal").value||30; document.querySelectorAll(".pourc").forEach(i=>i.value=v); calculer(); }
+function colorEvol(sel){ sel.classList.remove("bon","moyen","mauvais"); if(sel.value=="Bon") sel.classList.add("bon"); if(sel.value=="Moyen") sel.classList.add("moyen"); if(sel.value=="Mauvais") sel.classList.add("mauvais"); }
+function ajouter(){ creerLigne({}); calculer(); }
+function supprimer(btn){ if(confirm("Supprimer ?")){ btn.closest("tr").remove(); calculer(); } }
 function calculer(){
 let rows=document.querySelectorAll("#table tr");
-let totPrete=0, totProfit=0, totRemb=0;
-let data=[];
+let totPrete=0, totProfit=0, data=[];
 for(let i=1;i<rows.length;i++){
 let r=rows[i];
 let montant=Number(r.querySelector(".montant").value||0);
-let p5=montant*0.05;
-r.querySelector(".p5").innerText=Math.round(p5);
-r.querySelector(".profit").innerText=Math.round(p5);
-r.querySelector(".remb").innerText=Math.round(montant+p5);
-totPrete+=montant; totProfit+=p5; totRemb+=montant+p5;
-data.push({nom:r.querySelector(".nom").value, tel:r.querySelector(".tel").value, montant:montant, date:r.querySelector(".date").value, statut:r.querySelector(".statut").value, evol:r.querySelector(".evol").value});
+let pourc=Number(r.querySelector(".pourc").value||30);
+let profit=Math.round(montant*pourc/100);
+r.querySelector(".profit").innerText=profit;
+r.querySelector(".remb").innerText=montant+profit;
+totPrete+=montant; totProfit+=profit;
+data.push({code:r.querySelector(".code").value, nom:r.querySelector(".nom").value, tel:r.querySelector(".tel").value, montant:montant, date:r.querySelector(".date").value, pourc:pourc, statut:r.querySelector(".statut").value, evol:r.querySelector(".evol").value});
 }
 let capital=Number(document.getElementById("capital").value||0);
-let capitalActuel=capital+totProfit;
 document.getElementById("tPrete").innerText=totPrete;
-document.getElementById("tProfit").innerText=Math.round(totProfit);
-document.getElementById("tCapital").innerText=Math.round(capitalActuel);
-document.getElementById("ftPrete").innerText=totPrete;
-document.getElementById("ftProfit").innerText=Math.round(totProfit);
-document.getElementById("ftRemb").innerText=Math.round(totRemb);
+document.getElementById("tProfit").innerText=totProfit;
+document.getElementById("tCapital").innerText=capital+totProfit;
 let ev=document.getElementById("evolCapital");
-if(capitalActuel>capital){ ev.innerText="📈 CAPITAL AGRANDIT +"+Math.round(capitalActuel-capital)+" FC"; ev.className="vert"; }
-else if(capitalActuel<capital){ ev.innerText="📉 PERTE "+Math.round(capitalActuel-capital)+" FC"; ev.className="rouge"; }
-else{ ev.innerText="➖ CAPITAL STABLE"; ev.className=""; }
-localStorage.setItem("clients_final", JSON.stringify(data));
-localStorage.setItem("capital_final", capital);
+if(totProfit>0){ ev.innerText="📈 CAPITAL AGRANDIT +"+totProfit; ev.className="vert"; }
+else if(totProfit==0){ ev.innerText="➖ CAPITAL STABLE"; ev.className=""; }
+localStorage.setItem("clients_final",JSON.stringify(data));
+localStorage.setItem("capital_final",capital);
+localStorage.setItem("pourc_final",document.getElementById("pourcGlobal").value);
 }
-function filtrer(){
-let mot=document.getElementById("recherche").value.toLowerCase();
-let rows=document.querySelectorAll("#table tr");
-for(let i=1;i<rows.length;i++){
-let txt=rows[i].innerText.toLowerCase();
-let nom=rows[i].querySelector(".nom").value.toLowerCase();
-let tel=rows[i].querySelector(".tel").value.toLowerCase();
-rows[i].style.display=(nom.includes(mot)||tel.includes(mot)||txt.includes(mot))?"":"none";
-}
-}
+function filtrer(){ let mot=document.getElementById("recherche").value.toLowerCase(); let rows=document.querySelectorAll("#table tr"); for(let i=1;i<rows.length;i++){ rows[i].style.display=rows[i].innerText.toLowerCase().includes(mot)||rows[i].querySelector(".nom").value.toLowerCase().includes(mot)?"":"none"; } }
 window.onload=function(){
-let cap=localStorage.getItem("capital_final");
-if(cap) document.getElementById("capital").value=cap;
+let cap=localStorage.getItem("capital_final"); if(cap) document.getElementById("capital").value=cap;
+let pf=localStorage.getItem("pourc_final"); if(pf) document.getElementById("pourcGlobal").value=pf;
 let sauve=localStorage.getItem("clients_final");
-if(sauve && JSON.parse(sauve).length>0){ JSON.parse(sauve).forEach(c=>creerLigne(c)); }
-else{ creerLigne({nom:"Client", montant:1000, date:new Date().toISOString().slice(0,10), statut:"Non payé", evol:"Bon"}); }
+if(sauve && JSON.parse(sauve).length>0){ JSON.parse(sauve).forEach(c=>creerLigne(c)); } else { creerLigne({}); }
 calculer();
 }
 </script>
