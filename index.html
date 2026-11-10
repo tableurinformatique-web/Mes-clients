@@ -384,6 +384,62 @@ document.addEventListener("visibilitychange", function(){
 });
 window.addEventListener("pagehide", sauvegarderMaintenant);
 window.addEventListener("beforeunload", sauvegarderMaintenant);
+  // CALCUL RETARD + MOIS
+function majRetardMois(){
+  let aujourdhui = new Date(); aujourdhui.setHours(0,0,0,0);
+  let moisActuel = aujourdhui.getMonth();
+  let anneeActuelle = aujourdhui.getFullYear();
+  let retards = [];
+  let totalRetardArgent = 0;
+  let profitMois = 0;
+  let aRecupMois = 0;
+
+  document.querySelectorAll('tbody tr').forEach(tr => {
+    let inputs = tr.querySelectorAll('input, select');
+    if(inputs.length < 10) return;
+    // On essaie de trouver Nom, Reste, Date, Statut
+    let nom = inputs[1] ? inputs[1].value : 'Client';
+    let reste = 0; let dateVal = ''; let statut = '';
+    // On cherche dans toute la ligne
+    tr.querySelectorAll('td').forEach(td => {
+      let inp = td.querySelector('input');
+      let sel = td.querySelector('select');
+      if(inp && inp.type === 'date') dateVal = inp.value;
+      if(sel && sel.value && (sel.value.includes('pay') || sel.value.includes('Pay'))) statut = sel.value;
+    });
+    // Reste = colonne Reste, on prend le texte de la cellule Reste
+    let tds = tr.querySelectorAll('td');
+    if(tds[8]) reste = parseFloat(tds[8].innerText.replace(/[^0-9.-]/g,'')) || 0;
+    if(tds[5]) profitMois += 0; // on ne touche pas
+
+    if(dateVal){
+      let d = new Date(dateVal); d.setHours(0,0,0,0);
+      let estPaye = statut.toLowerCase().includes('pay') && !statut.toLowerCase().includes('non');
+      if(d < aujourdhui && !estPaye && reste > 0){
+        retards.push(nom + ' - ' + reste + ' $ (' + dateVal + ')');
+        totalRetardArgent += reste;
+      }
+      if(d.getMonth() === moisActuel && d.getFullYear() === anneeActuelle){
+        aRecupMois += reste;
+        // Profit de la ligne
+        if(tds[5]) profitMois += parseFloat(tds[5].innerText.replace(/[^0-9.-]/g,'')) || 0;
+      }
+    }
+  });
+
+  let elListe = document.getElementById('listeRetard');
+  let elTotal = document.getElementById('totalRetard');
+  if(elListe){
+    if(retards.length === 0){ elListe.innerHTML = 'Aucun retard - Bravo Président !'; elTotal.innerHTML=''; }
+    else { elListe.innerHTML = retards.join('<br>'); elTotal.innerHTML = 'Total à récupérer en retard : ' + totalRetardArgent + ' $'; }
+  }
+  let elMois = document.getElementById('totalMois');
+  if(elMois) elMois.innerHTML = 'Profit du mois : ' + profitMois + ' $';
+  let elMois2 = document.getElementById('totalMoisRemb');
+  if(elMois2) elMois2.innerHTML = 'À récupérer ce mois : ' + aRecupMois + ' $';
+}
+setInterval(majRetardMois, 2000);
+setTimeout(majRetardMois, 1000);
 </script>
 </body>
 </html>
