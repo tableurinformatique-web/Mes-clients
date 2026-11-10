@@ -107,6 +107,7 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <div style="display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap;">
   <button id="btnFiltre" onclick="filtrerRetard()" style="background:#dc3545; padding:10px 14px;">🔴 Voir Retardataires</button>
   <button id="btnDevise" onclick="basculerDevise()" style="background:#ff9800; padding:10px 14px;">💵 Afficher en CDF</button>
+  <button id="btnNoire" onclick="voirListeNoire()" style="background:#000; color:#fff; padding:10px 14px;">🚫 Voir Liste Noire</button>
 </div>
 <div id="infoFiltre" style="text-align:center; font-size:13px; color:#555; margin-bottom:5px;"></div>
 
@@ -185,6 +186,7 @@ tr.innerHTML=`
 <td><select class="evol" onchange="colorEvol(this);calculer();sauvegarderMaintenant()"><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></td>
 <td class="no-print"><button class="btnW" onclick="whatsapp(this)">💬 WhatsApp</button></td>
 <td class="no-print"><button class="btnRecu" onclick="voirRecu(this)">🧾 Reçu</button></td>
+<td class="no-print"><button onclick="mettreListeNoire(this)">🚫</button></td>
 <td class="no-print"><button class="btnRouge" onclick="supprimer(this)">X</button></td>`;
 document.getElementById("table").appendChild(tr);
 if(c.statut) tr.querySelector(".statut").value=c.statut;
@@ -388,6 +390,29 @@ sauvegarderMaintenant();
 document.addEventListener("visibilitychange", function(){
   if(document.visibilityState==="hidden"){ sauvegarderMaintenant(); }
 });
+  /* ===== LISTE NOIRE PRESIDENT ===== */
+function mettreListeNoire(btn){
+  let tr = btn.closest("tr");
+  let estNoire = tr.dataset.noire=="1";
+  if(estNoire){
+    tr.style.background=""; tr.style.color=""; tr.dataset.noire="0"; btn.textContent="🚫";
+    alert("Client retiré de la Liste Noire");
+  }else{
+    tr.style.background="#000"; tr.style.color="#fff"; tr.dataset.noire="1"; btn.textContent="✅";
+    alert("🚫 Client mis en LISTE NOIRE ! Il ne pourra plus emprunter.");
+  }
+  calculer();
+}
+function voirListeNoire()
+  let rows = document.querySelectorAll("#table tr");
+  let onMontreNoire = document.getElementById("btnNoire").textContent.includes("Voir Liste");
+  rows.forEach((r,i)=>{
+    if(i==0) return;
+    if(onMontreNoire){ r.style.display = r.dataset.noire=="1" ? "" : "none"; }
+    else{ r.style.display=""; }
+  });
+  document.getElementById("btnNoire").textContent = onMontreNoire ? "👀 Voir Tout" : "🚫 Voir Liste Noire";
+}
 window.addEventListener("pagehide", sauvegarderMaintenant);
 window.addEventListener("beforeunload", sauvegarderMaintenant);
   // CALCUL RETARD + MOIS
