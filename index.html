@@ -558,9 +558,22 @@ function basculerDevise(){
   let btn = document.getElementById('btnDevise');
   if(deviseActuelle === '$'){ deviseActuelle = 'CDF'; btn.innerText = '💲 Afficher en Dollar'; btn.style.background = '#007bff'; }
   else { deviseActuelle = '$'; btn.innerText = '💵 Afficher en CDF'; btn.style.background = '#ff9800'; }
+  document.querySelectorAll('#table input').forEach(inp=>{
+    let v = parseFloat(String(inp.value).replace(/[^0-9.-]/g,''));
+    if(isNaN(v) || v===0) return;
+    let td = inp.closest('td');
+    if(!td) return;
+    let tr = td.closest('tr');
+    let ths = document.querySelectorAll('#table tr:first-child th');
+    let idx = Array.from(tr.children).indexOf(td);
+    let titre = ths[idx] ? ths[idx].innerText.toLowerCase() : '';
+    if(titre.includes('montant') || titre.includes('reste') || titre.includes('profit') || titre.includes('payer') || titre.includes('rembours')){
+      if(deviseActuelle === 'CDF'){ inp.value = Math.round(v * tauxCDF); }
+      else { inp.value = Math.round(v / tauxCDF); }
+    }
+  });
   document.querySelectorAll('#table td, #table th').forEach(td=>{
-    let inp = td.querySelector('input');
-    if(inp) return;
+    if(td.querySelector('input')) return;
     let txt = td.innerText;
     if(!txt.includes('$') && !txt.includes('CDF') && !txt.includes('FC')) return;
     let nombre = parseFloat(txt.replace(/[^0-9.-]/g,''));
