@@ -103,6 +103,12 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <input type="file" id="fichierSauvegarde" accept=".json" onchange="chargerSauvegarde(event)" style="display:none">
 </div>
 <div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
+  <!-- BOUTONS PRESIDENT 8 et 9 -->
+<div style="display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap;">
+  <button id="btnFiltre" onclick="filtrerRetard()" style="background:#dc3545; padding:10px 14px;">🔴 Voir Retardataires</button>
+  <button id="btnDevise" onclick="basculerDevise()" style="background:#ff9800; padding:10px 14px;">💵 Afficher en CDF</button>
+</div>
+<div id="infoFiltre" style="text-align:center; font-size:13px; color:#555; margin-bottom:5px;"></div>
 
 <div style="overflow-x:auto">
 <table id="table">
