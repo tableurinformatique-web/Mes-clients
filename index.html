@@ -524,6 +524,51 @@ document.addEventListener('click', function(e){
   if(tds.length===0) return;
   if(Array.from(tds).indexOf(td) === iNom){ ouvrirFiche(tr); }
 });
+// 8. FILTRE + 9. DEVISE - PRESIDENT
+let filtreActif = false;
+let deviseActuelle = '$';
+let tauxCDF = 2850;
+
+function filtrerRetard(){
+  let table = document.getElementById('table');
+  let lignes = table.querySelectorAll('tr');
+  let entetes = Array.from(lignes[0].querySelectorAll('th')).map(th=>th.innerText.toLowerCase());
+  let iStatut = entetes.findIndex(h=>h.includes('statut'));
+  let iReste = entetes.findIndex(h=>h.includes('reste'));
+  let btn = document.getElementById('btnFiltre');
+  let info = document.getElementById('infoFiltre');
+  filtreActif = !filtreActif;
+  let nbCache = 0;
+  lignes.forEach((tr, idx)=>{
+    if(idx===0) return;
+    let tds = tr.querySelectorAll('td');
+    if(tds.length===0) return;
+    let getVal = (i)=>{ if(i<0||!tds[i]) return ''; let inp = tds[i].querySelector('input,select'); return inp ? inp.value : tds[i].innerText; };
+    let statut = String(getVal(iStatut)).toLowerCase();
+    let reste = parseFloat(String(getVal(iReste)).replace(/[^0-9.-]/g,''))||0;
+    let aPaye = (statut.includes('payé') && !statut.includes('partiel') && !statut.includes('non')) || reste===0;
+    if(filtreActif && aPaye){ tr.style.display='none'; nbCache++; }
+    else { tr.style.display=''; }
+  });
+  if(filtreActif){ btn.innerText='👁️ Voir Tout Le Monde'; btn.style.background='#28a745'; info.innerText = 'Tu vois seulement ceux qui te doivent encore. ' + nbCache + ' client(s) déjà payé(s) caché(s).'; }
+  else { btn.innerText='🔴 Voir Retardataires'; btn.style.background='#dc3545'; info.innerText=''; }
+}
+
+function basculerDevise(){
+  let btn = document.getElementById('btnDevise');
+  if(deviseActuelle === '$'){ deviseActuelle = 'CDF'; btn.innerText = '💲 Afficher en Dollar'; btn.style.background = '#007bff'; }
+  else { deviseActuelle = '$'; btn.innerText = '💵 Afficher en CDF'; btn.style.background = '#ff9800'; }
+  document.querySelectorAll('#table td, #table th').forEach(td=>{
+    let inp = td.querySelector('input');
+    if(inp) return;
+    let txt = td.innerText;
+    if(!txt.includes('$') && !txt.includes('CDF') && !txt.includes('FC')) return;
+    let nombre = parseFloat(txt.replace(/[^0-9.-]/g,''));
+    if(isNaN(nombre)) return;
+    if(deviseActuelle === 'CDF'){ if(txt.includes('$')) td.innerText = (nombre * tauxCDF).toLocaleString('fr-FR') + ' CDF'; }
+    else { if(txt.includes('CDF') || txt.includes('FC')) td.innerText = Math.round(nombre / tauxCDF) + ' $'; }
+  });
+}
 </script>
   <!-- FICHE CLIENT PRESIDENT -->
 <div id="ficheClient" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; justify-content:center; align-items:center;">
