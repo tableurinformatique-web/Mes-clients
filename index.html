@@ -440,6 +440,117 @@ function majRetardMois(){
 }
 setInterval(majRetardMois, 2000);
 setTimeout(majRetardMois, 1000);
+  // FICHE CLIENT - PRESIDENT
+let clientFicheActuel = null;
+function ouvrirFiche(tr){
+  clientFicheActuel = tr;
+  let table = document.getElementById('table');
+  let entetes = Array.from(table.querySelectorAll('tr th')).map(th=>th.innerText.toLowerCase());
+  let iNom = entetes.findIndex(h=>h.includes('nom'));
+  let iTel = entetes.findIndex(h=>h.includes('télé') || h.includes('tele'));
+  let iMontant = entetes.findIndex(h=>h.includes('montant') || h.includes('prêté') || h.includes('prete'));
+  let iProfit = entetes.findIndex(h=>h.includes('profit'));
+  let iRemb = entetes.findIndex(h=>h.includes('rembourse') || h.includes('remb'));
+  let iReste = entetes.findIndex(h=>h.includes('reste'));
+  let iDate = entetes.findIndex(h=>h.includes('date') && h.includes('remb'));
+  if(iDate<0) iDate = entetes.findIndex(h=>h.includes('remb'));
+  let iStatut = entetes.findIndex(h=>h.includes('statut'));
+  let iEvol = entetes.findIndex(h=>h.includes('évolution') || h.includes('evolution'));
+  let tds = tr.querySelectorAll('td');
+  let getVal = (i)=>{ if(i<0 || !tds[i]) return ''; let inp = tds[i].querySelector('input,select'); return inp ? inp.value : tds[i].innerText; };
+  let montant = parseFloat(String(getVal(iMontant)).replace(/[^0-9.-]/g,''))||0;
+  let profit = parseFloat(String(getVal(iProfit)).replace(/[^0-9.-]/g,''))||0;
+  let remb = parseFloat(String(getVal(iRemb)).replace(/[^0-9.-]/g,''))||0;
+  let reste = parseFloat(String(getVal(iReste)).replace(/[^0-9.-]/g,''))||0;
+  if(!remb) remb = montant + profit;
+  let paye = remb - reste; if(paye<0) paye=0;
+  document.getElementById('ficheNom').innerText = getVal(iNom) || 'Client';
+  document.getElementById('ficheTel').innerText = '📞 ' + (getVal(iTel) || 'Pas de numéro');
+  document.getElementById('ficheCode').innerText = tds[0] ? tds[0].innerText : 'C001';
+  document.getElementById('ficheStatut').innerText = getVal(iStatut) || 'Non payé';
+  document.getElementById('ficheMontant').innerText = montant + ' $';
+  document.getElementById('ficheProfit').innerText = profit + ' $';
+  document.getElementById('ficheRemb').innerText = remb + ' $';
+  document.getElementById('fichePaye').innerText = paye + ' $';
+  document.getElementById('ficheReste').innerText = reste + ' $';
+  document.getElementById('ficheDate').innerText = getVal(iDate) || '-';
+  document.getElementById('ficheEvol').innerText = getVal(iEvol) || 'Bon';
+  document.getElementById('ficheHisto').innerText = 'Historique : 1er crédit de ' + montant + ' $ - Reste ' + reste + ' $ à payer avant ' + (getVal(iDate) || '-');
+  let nomCle = 'photo_' + (getVal(iNom) || '');
+  let photo = localStorage.getItem(nomCle);
+  let img = document.getElementById('fichePhoto');
+  let sans = document.getElementById('ficheSansPhoto');
+  if(photo){ img.src = photo; img.style.display='block'; sans.style.display='none'; }
+  else { img.style.display='none'; sans.style.display='block'; }
+  document.getElementById('ficheClient').style.display='flex';
+}
+function fermerFiche(){ document.getElementById('ficheClient').style.display='none'; }
+function changerPhoto(input){
+  let file = input.files[0]; if(!file) return;
+  let reader = new FileReader();
+  reader.onload = function(e){
+    document.getElementById('fichePhoto').src = e.target.result;
+    document.getElementById('fichePhoto').style.display='block';
+    document.getElementById('ficheSansPhoto').style.display='none';
+    let nom = document.getElementById('ficheNom').innerText;
+    localStorage.setItem('photo_' + nom, e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+function appelerFiche(){
+  let tel = document.getElementById('ficheTel').innerText.replace(/[^0-9+]/g,'');
+  if(tel) window.location.href = 'tel:' + tel;
+}
+function whatsappFiche(){
+  let tel = document.getElementById('ficheTel').innerText.replace(/[^0-9]/g,'');
+  let nom = document.getElementById('ficheNom').innerText;
+  let reste = document.getElementById('ficheReste').innerText;
+  let date = document.getElementById('ficheDate').innerText;
+  if(tel) window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent('Bonjour ' + nom + ', il te reste ' + reste + ' à payer avant le ' + date + '. Merci Président.'), '_blank');
+}
+document.addEventListener('click', function(e){
+  let td = e.target.closest('td'); if(!td) return;
+  let tr = td.closest('tr'); if(!tr) return;
+  let table = document.getElementById('table'); if(!table.contains(tr)) return;
+  let entetes = Array.from(table.querySelectorAll('tr th')).map(th=>th.innerText.toLowerCase());
+  let iNom = entetes.findIndex(h=>h.includes('nom'));
+  let tds = tr.querySelectorAll('td');
+  if(tds.length===0) return;
+  if(Array.from(tds).indexOf(td) === iNom){ ouvrirFiche(tr); }
+});
 </script>
+  <!-- FICHE CLIENT PRESIDENT -->
+<div id="ficheClient" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; justify-content:center; align-items:center;">
+  <div style="background:white; width:92%; max-width:400px; border-radius:15px; padding:18px; text-align:center; position:relative;">
+    <button onclick="fermerFiche()" style="position:absolute; top:8px; right:10px; background:red; color:white; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold;">X</button>
+    
+    <div style="width:110px; height:110px; border-radius:50%; background:#e9f5ff; margin:0 auto; overflow:hidden; border:3px solid #007bff; display:flex; align-items:center; justify-content:center;">
+      <img id="fichePhoto" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+      <span id="ficheSansPhoto" style="font-size:50px;">👤</span>
+    </div>
+    <label style="color:#007bff; font-size:13px; cursor:pointer;"><b>📷 Changer la photo</b><input type="file" accept="image/*" onchange="changerPhoto(this)" style="display:none;"></label>
+
+    <h2 id="ficheNom" style="margin:8px 0 2px;">Nom Client</h2>
+    <div id="ficheTel" style="color:#555;">📞 0000000000</div>
+    <div id="ficheCode" style="display:inline-block; background:#007bff; color:white; padding:3px 10px; border-radius:20px; font-size:13px; margin-top:6px;">C001</div>
+    <div id="ficheStatut" style="display:inline-block; background:#ffe5e5; color:red; padding:3px 10px; border-radius:20px; font-size:13px; margin-top:6px;">Non payé</div>
+
+    <div style="text-align:left; background:#f8f9fa; border-radius:10px; padding:12px; margin-top:12px; font-size:15px; line-height:1.8;">
+      💰 <b>Montant prêté :</b> <span id="ficheMontant">0 $</span><br>
+      📈 <b>Profit :</b> <span id="ficheProfit">0 $</span><br>
+      🧾 <b>Total à rembourser :</b> <span id="ficheRemb">0 $</span><br>
+      ✅ <b>Déjà payé :</b> <span id="fichePaye">0 $</span><br>
+      🔴 <b>Reste à payer :</b> <b id="ficheReste" style="color:red;">0 $</b><br>
+      📅 <b>Date limite :</b> <span id="ficheDate">-</span><br>
+      ⭐ <b>Évolution :</b> <span id="ficheEvol">Bon</span>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button onclick="appelerFiche()" style="flex:1; background:#28a745;">📞 Appeler</button>
+      <button onclick="whatsappFiche()" style="flex:1; background:#25D366;">💬 WhatsApp</button>
+    </div>
+    <div id="ficheHisto" style="text-align:left; font-size:13px; color:#555; margin-top:10px; background:#fff3cd; padding:8px; border-radius:8px;">Historique : 1er crédit - En cours</div>
+  </div>
+</div>
 </body>
 </html>
