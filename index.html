@@ -78,6 +78,19 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <canvas id="graph" width="340" height="140"></canvas><br>
 <span style="font-size:12px"><span style="color:#007bff">■ Prêté</span> <span style="color:#28a745">■ Profit</span> <span style="color:#dc3545">■ À Récupérer</span></span>
 </div>
+  <!-- RETARDATAIRES + TOTAL MOIS PRESIDENT -->
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">
+  <div id="boxRetard" style="flex:1; min-width:250px; background:#ffe5e5; border:2px solid red; border-radius:10px; padding:12px; text-align:center;">
+    <div style="font-weight:bold; color:red; font-size:16px;">🔴 CLIENTS EN RETARD</div>
+    <div id="listeRetard" style="font-size:15px; margin-top:6px; color:#333;">Aucun retard - Bravo Président !</div>
+    <div id="totalRetard" style="font-weight:bold; margin-top:6px;"></div>
+  </div>
+  <div style="flex:1; min-width:250px; background:#e8f5e9; border:2px solid green; border-radius:10px; padding:12px; text-align:center;">
+    <div style="font-weight:bold; color:green; font-size:16px;">📅 CE MOIS-CI</div>
+    <div id="totalMois" style="font-size:18px; margin-top:6px; font-weight:bold;">Profit du mois : 0 $</div>
+    <div id="totalMoisRemb" style="font-size:14px; margin-top:4px;">À récupérer ce mois : 0 $</div>
+  </div>
+</div>
 
 <div class="box no-print">
 🔍 Recherche : <input id="recherche" placeholder="Nom, Code ou Téléphone..." oninput="filtrer()" style="width:80%"><br><br>
