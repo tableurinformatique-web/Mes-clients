@@ -53,7 +53,7 @@ th{background:#007bff; color:white}
 <div class="box">
 <button onclick="exporter()">⬇️ Télécharger Sauvegarde</button>
 <button class="btnNoir" onclick="document.getElementById('fileImport').click()">⬆️ Restaurer Sauvegarde</button>
-<input type="file" id="fileImport" style="display:none" onchange="importer(event)">
+<input type="file" id="fileImport" accept=".json,application/json" style="display:none" onchange="importer(event)">
 <br><small>Tes données restent dans ton téléphone, même sans internet.</small>
 </div>
 
