@@ -49,7 +49,7 @@ td:nth-child(5) input, td:nth-child(6) input, td:nth-child(13) input{min-width:1
 
 <div class="header">
 <div class="logo">TI</div>
-<div style="text-align:left"><h1>TABLEUR INFORMATIQUE</h1><p>Gestion des Crédits Clients - Lubumbashi - En Dollars $</p></div>
+<div style="text-align:left"><h1>TABLEUR INFORMATIQUE</h1><p>Gestion des Crédits Clients - Likasi - En Dollars $</p></div>
 </div>
 
 <div class="dashboard">
@@ -95,8 +95,9 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER / PDF</button>
 <button onclick="exporterWord()" class="btnOrange">📄 EXPORTER VERS WORD</button><br>
 <button onclick="telechargerSauvegarde()" class="btnVert" style="background:#0b2e59">💾 TÉLÉCHARGER LA SAUVEGARDE</button>
-<button onclick="ouvrirFichier()" class="btnRecu">📂 CHARGER UNE SAUVEGARDE</button>
-<input type="file" id="fichierSauvegarde" onchange="chargerSauvegarde(event)" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+<label class="btnRecu" style="display:inline-block; padding:9px 11px; margin:3px; border-radius:8px; background:#6f42c1; color:white; font-weight:bold; cursor:pointer; font-size:13px;">📂 CHARGER UNE SAUVEGARDE
+<input type="file" id="fichierSauvegarde" onchange="chargerSauvegarde(event)" style="display:none;">
+</label>
 </div>
 <div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
 <div style="display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap;">
@@ -287,4 +288,308 @@ for(let i=1;i<rows.length;i++){
 let r=rows[i];
 lignes+=`<tr><td>${r.querySelector(".code").value}</td><td>${r.querySelector(".nom").value}</td><td>${r.querySelector(".tel").value}</td><td>$ ${r.querySelector(".montant").value}</td><td>${r.querySelector(".date").value}</td><td>${r.querySelector(".dateLimite").value}</td><td>${r.querySelector(".pourc").value}%</td><td>$ ${r.querySelector(".profit").innerText}</td><td>$ ${r.querySelector(".remb").innerText}</td><td>$ ${r.querySelector(".paye").value}</td><td>$ ${r.querySelector(".reste").innerText}</td><td>${r.querySelector(".statut").value}</td></tr>`;
 }
-let html=`<html><head><meta charset='utf-8'></head><body style='font-family:Arial'><h1 style='text-align:center; color:#0b2e59'>TABLEUR INFORMATIQUE</h1><p style='text-align:center'>Lubumbashi - Tout
+let html=`<html><head><meta charset='utf-8'></head><body style='font-family:Arial'><h1 style='text-align:center; color:#0b2e59'>TABLEUR INFORMATIQUE</h1><p style='text-align:center'>Lubumbashi - Tout en Dollars $ - Date : ${new Date().toLocaleDateString('fr-FR')}</p><p><b>Capital :</b> $ ${capital} | <b>Total Prêté :</b> ${totPrete} | <b>Total Profit :</b> ${totProfit}</p><table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%; font-size:12px'><tr style='background:#0b2e59; color:white'><th>Code</th><th>Nom</th><th>Tel</th><th>Montant</th><th>Date</th><th>Date Limite</th><th>%</th><th>Profit</th><th>Rembourse</th><th>Payé</th><th>Reste</th><th>Statut</th></tr>${lignes}</table><p>© TABLEUR INFORMATIQUE</p></body></html>`;
+let blob=new Blob(['\ufeff', html], {type:'application/msword'});
+let url=URL.createObjectURL(blob);
+let a=document.createElement("a"); a.href=url; a.download="TABLEUR-INFORMATIQUE-Clients.doc"; a.click();
+window.open(url, '_blank');
+}
+function filtrer(){ let mot=document.getElementById("recherche").value.toLowerCase(); let rows=document.querySelectorAll("#table tr"); for(let i=1;i<rows.length;i++){ let r=rows[i]; let txt=r.querySelector(".nom").value.toLowerCase()+" "+r.querySelector(".code").value.toLowerCase()+" "+r.querySelector(".tel").value.toLowerCase(); r.style.display=txt.includes(mot)?"":"none"; } }
+function telechargerSauvegarde(){
+  let rows = document.querySelectorAll("#table tr");
+  let data = [];
+  for(let i=1; i<rows.length; i++){
+    let r = rows[i];
+    data.push({
+      code: r.querySelector(".code").value,
+      nom: r.querySelector(".nom").value,
+      tel: r.querySelector(".tel").value,
+      montant: r.querySelector(".montant").value,
+      date: r.querySelector(".date").value,
+      dateLimite: r.querySelector(".dateLimite").value,
+      pourc: r.querySelector(".pourc").value,
+      paye: r.querySelector(".paye").value,
+      dateRemb: r.querySelector(".dateRemb").value,
+      statut: r.querySelector(".statut").value,
+      evol: r.querySelector(".evol").value
+    });
+  }
+  let sauvegardeComplete = {
+    capital: document.getElementById("capital").value,
+    pourcentage: document.getElementById("pourcGlobal").value,
+    clients: data,
+    dateSauvegarde: new Date().toLocaleString('fr-FR')
+  };
+  let texte = JSON.stringify(sauvegardeComplete, null, 2);
+  let blob = new Blob([texte], {type: 'application/json'});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  let dateJour = new Date().toISOString().split('T')[0];
+  a.download = "SAUVEGARDE-TABLEUR-" + dateJour + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+  alert("✅ Sauvegarde téléchargée ! Gardez ce fichier en sécurité.");
+}
+/* ===== CHARGER UNE SAUVEGARDE - CORRIGÉ PRESIDENT V3 LABEL ===== */
+function chargerSauvegarde(event){
+  let fichier = event.target.files[0];
+  if(!fichier){ return; }
+  let lecteur = new FileReader();
+  lecteur.onload = function(e){
+    try {
+      let texte = e.target.result.replace(/^\uFEFF/, '');
+      let contenu = JSON.parse(texte);
+      let listeClients = null;
+      let capitalSave = null;
+      let pourcSave = null;
+      if(Array.isArray(contenu)){
+        listeClients = contenu;
+      } else if(contenu.clients){
+        listeClients = contenu.clients;
+        capitalSave = contenu.capital;
+        pourcSave = contenu.pourcentage;
+      } else if(contenu.data){
+        listeClients = contenu.data;
+      }
+      if(!listeClients){ alert("❌ Fichier invalide. Prends le fichier SAUVEGARDE-TABLEUR-...json"); return; }
+      if(!confirm("⚠️ Cela va remplacer les données actuelles. Continuer ?")) return;
+      let table = document.getElementById("table");
+      while(table.rows.length > 1){ table.deleteRow(1); }
+      if(capitalSave) document.getElementById("capital").value = capitalSave;
+      if(pourcSave) document.getElementById("pourcGlobal").value = pourcSave;
+      listeClients.forEach(c => creerLigne(c));
+      calculer();
+      sauvegarderMaintenant();
+      alert("✅ Sauvegarde restaurée ! (" + listeClients.length + " clients)");
+    } catch(err){
+      alert("❌ Erreur : choisis le bon fichier .json dans Téléchargements");
+    }
+    event.target.value = "";
+  };
+  lecteur.readAsText(fichier);
+}
+window.onload=function(){
+let cap=localStorage.getItem("capital_pro"); if(cap) document.getElementById("capital").value=cap;
+let pf=localStorage.getItem("pourc_pro"); if(pf) document.getElementById("pourcGlobal").value=pf;
+let sauve=localStorage.getItem("clients_pro");
+if(sauve && JSON.parse(sauve).length>0){ JSON.parse(sauve).forEach(c=>creerLigne(c)); } else { creerLigne({}); }
+calculer();
+sauvegarderMaintenant();
+};
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState==="hidden"){ sauvegarderMaintenant(); }
+});
+window.addEventListener("pagehide", sauvegarderMaintenant);
+window.addEventListener("beforeunload", sauvegarderMaintenant);
+function majRetardMois(){
+  let aujourdhui = new Date(); aujourdhui.setHours(0,0,0,0);
+  let moisActuel = aujourdhui.getMonth();
+  let anneeActuelle = aujourdhui.getFullYear();
+  let retards = [];
+  let totalRetardArgent = 0;
+  let profitMois = 0;
+  let aRecupMois = 0;
+  document.querySelectorAll('tbody tr').forEach(tr => {
+    let inputs = tr.querySelectorAll('input, select');
+    if(inputs.length < 10) return;
+    let nom = inputs[1] ? inputs[1].value : 'Client';
+    let reste = 0; let dateVal = ''; let statut = '';
+    tr.querySelectorAll('td').forEach(td => {
+      let inp = td.querySelector('input');
+      let sel = td.querySelector('select');
+      if(inp && inp.type === 'date') dateVal = inp.value;
+      if(sel && sel.value && (sel.value.includes('pay') || sel.value.includes('Pay'))) statut = sel.value;
+    });
+    let tds = tr.querySelectorAll('td');
+    if(tds[8]) reste = parseFloat(tds[8].innerText.replace(/[^0-9.-]/g,'')) || 0;
+    if(tds[5]) profitMois += 0;
+    if(dateVal){
+      let d = new Date(dateVal); d.setHours(0,0,0,0);
+      let estPaye = statut.toLowerCase().includes('pay') && !statut.toLowerCase().includes('non');
+      if(d < aujourdhui && !estPaye && reste > 0){
+        retards.push(nom + ' - ' + reste + ' $ (' + dateVal + ')');
+        totalRetardArgent += reste;
+      }
+      if(d.getMonth() === moisActuel && d.getFullYear() === anneeActuelle){
+        aRecupMois += reste;
+        if(tds[5]) profitMois += parseFloat(tds[5].innerText.replace(/[^0-9.-]/g,'')) || 0;
+      }
+    }
+  });
+  let elListe = document.getElementById('listeRetard');
+  let elTotal = document.getElementById('totalRetard');
+  if(elListe){
+    if(retards.length === 0){ elListe.innerHTML = 'Aucun retard - Bravo Président !'; elTotal.innerHTML=''; }
+    else { elListe.innerHTML = retards.join('<br>'); elTotal.innerHTML = 'Total à récupérer en retard : ' + totalRetardArgent + ' $'; }
+  }
+  let elMois = document.getElementById('totalMois');
+  if(elMois) elMois.innerHTML = 'Profit du mois : ' + profitMois + ' $';
+  let elMois2 = document.getElementById('totalMoisRemb');
+  if(elMois2) elMois2.innerHTML = 'À récupérer ce mois : ' + aRecupMois + ' $';
+}
+setInterval(majRetardMois, 2000);
+setTimeout(majRetardMois, 1000);
+let clientFicheActuel = null;
+function ouvrirFiche(tr){
+  clientFicheActuel = tr;
+  let table = document.getElementById('table');
+  let entetes = Array.from(table.querySelectorAll('tr th')).map(th=>th.innerText.toLowerCase());
+  let iNom = entetes.findIndex(h=>h.includes('nom'));
+  let iTel = entetes.findIndex(h=>h.includes('télé') || h.includes('tele'));
+  let iMontant = entetes.findIndex(h=>h.includes('montant') || h.includes('prêté') || h.includes('prete'));
+  let iProfit = entetes.findIndex(h=>h.includes('profit'));
+  let iRemb = entetes.findIndex(h=>h.includes('rembourse') || h.includes('remb'));
+  let iReste = entetes.findIndex(h=>h.includes('reste'));
+  let iDate = entetes.findIndex(h=>h.includes('date') && h.includes('remb'));
+  if(iDate<0) iDate = entetes.findIndex(h=>h.includes('remb'));
+  let iStatut = entetes.findIndex(h=>h.includes('statut'));
+  let iEvol = entetes.findIndex(h=>h.includes('évolution') || h.includes('evolution'));
+  let tds = tr.querySelectorAll('td');
+  let getVal = (i)=>{ if(i<0 || !tds[i]) return ''; let inp = tds[i].querySelector('input,select'); return inp ? inp.value : tds[i].innerText; };
+  let montant = parseFloat(String(getVal(iMontant)).replace(/[^0-9.-]/g,''))||0;
+  let profit = parseFloat(String(getVal(iProfit)).replace(/[^0-9.-]/g,''))||0;
+  let remb = parseFloat(String(getVal(iRemb)).replace(/[^0-9.-]/g,''))||0;
+  let reste = parseFloat(String(getVal(iReste)).replace(/[^0-9.-]/g,''))||0;
+  if(!remb) remb = montant + profit;
+  let paye = remb - reste; if(paye<0) paye=0;
+  document.getElementById('ficheNom').innerText = getVal(iNom) || 'Client';
+  document.getElementById('ficheTel').innerText = '📞 ' + (getVal(iTel) || 'Pas de numéro');
+  document.getElementById('ficheCode').innerText = tds[0] ? tds[0].innerText : 'C001';
+  document.getElementById('ficheStatut').innerText = getVal(iStatut) || 'Non payé';
+  document.getElementById('ficheMontant').innerText = montant + ' $';
+  document.getElementById('ficheProfit').innerText = profit + ' $';
+  document.getElementById('ficheRemb').innerText = remb + ' $';
+  document.getElementById('fichePaye').innerText = paye + ' $';
+  document.getElementById('ficheReste').innerText = reste + ' $';
+  document.getElementById('ficheDate').innerText = getVal(iDate) || '-';
+  document.getElementById('ficheEvol').innerText = getVal(iEvol) || 'Bon';
+  document.getElementById('ficheHisto').innerText = 'Historique : 1er crédit de ' + montant + ' $ - Reste ' + reste + ' $ à payer avant ' + (getVal(iDate) || '-');
+  let nomCle = 'photo_' + (getVal(iNom) || '');
+  let photo = localStorage.getItem(nomCle);
+  let img = document.getElementById('fichePhoto');
+  let sans = document.getElementById('ficheSansPhoto');
+  if(photo){ img.src = photo; img.style.display='block'; sans.style.display='none'; }
+  else { img.style.display='none'; sans.style.display='block'; }
+  document.getElementById('ficheClient').style.display='flex';
+}
+function fermerFiche(){ document.getElementById('ficheClient').style.display='none'; }
+function changerPhoto(input){
+  let file = input.files[0]; if(!file) return;
+  let reader = new FileReader();
+  reader.onload = function(e){
+    document.getElementById('fichePhoto').src = e.target.result;
+    document.getElementById('fichePhoto').style.display='block';
+    document.getElementById('ficheSansPhoto').style.display='none';
+    let nom = document.getElementById('ficheNom').innerText;
+    localStorage.setItem('photo_' + nom, e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+function appelerFiche(){
+  let tel = document.getElementById('ficheTel').innerText.replace(/[^0-9+]/g,'');
+  if(tel) window.location.href = 'tel:' + tel;
+}
+function whatsappFiche(){
+  let tel = document.getElementById('ficheTel').innerText.replace(/[^0-9]/g,'');
+  let nom = document.getElementById('ficheNom').innerText;
+  let reste = document.getElementById('ficheReste').innerText;
+  let date = document.getElementById('ficheDate').innerText;
+  if(tel) window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent('Bonjour ' + nom + ', il te reste ' + reste + ' à payer avant le ' + date + '. Merci Président.'), '_blank');
+}
+document.addEventListener('click', function(e){
+  let td = e.target.closest('td'); if(!td) return;
+  let tr = td.closest('tr'); if(!tr) return;
+  let table = document.getElementById('table'); if(!table.contains(tr)) return;
+  let entetes = Array.from(table.querySelectorAll('tr th')).map(th=>th.innerText.toLowerCase());
+  let iNom = entetes.findIndex(h=>h.includes('nom'));
+  let tds = tr.querySelectorAll('td');
+  if(tds.length===0) return;
+  if(Array.from(tds).indexOf(td) === iNom){ ouvrirFiche(tr); }
+});
+let filtreActif = false;
+let deviseActuelle = '$';
+let tauxCDF = 2850;
+function filtrerRetard(){
+  let table = document.getElementById('table');
+  let lignes = table.querySelectorAll('tr');
+  let entetes = Array.from(lignes[0].querySelectorAll('th')).map(th=>th.innerText.toLowerCase());
+  let iStatut = entetes.findIndex(h=>h.includes('statut'));
+  let iReste = entetes.findIndex(h=>h.includes('reste'));
+  let btn = document.getElementById('btnFiltre');
+  let info = document.getElementById('infoFiltre');
+  filtreActif = !filtreActif;
+  let nbCache = 0;
+  lignes.forEach((tr, idx)=>{
+    if(idx===0) return;
+    let tds = tr.querySelectorAll('td');
+    if(tds.length===0) return;
+    let getVal = (i)=>{ if(i<0||!tds[i]) return ''; let inp = tds[i].querySelector('input,select'); return inp ? inp.value : tds[i].innerText; };
+    let statut = String(getVal(iStatut)).toLowerCase();
+    let reste = parseFloat(String(getVal(iReste)).replace(/[^0-9.-]/g,''))||0;
+    let aPaye = (statut.includes('payé') && !statut.includes('partiel') && !statut.includes('non')) || reste===0;
+    if(filtreActif && aPaye){ tr.style.display='none'; nbCache++; }
+    else { tr.style.display=''; }
+  });
+  if(filtreActif){ btn.innerText='👁️ Voir Tout Le Monde'; btn.style.background='#28a745'; info.innerText = 'Tu vois seulement ceux qui te doivent encore. ' + nbCache + ' client(s) déjà payé(s) caché(s).'; }
+  else { btn.innerText='🔴 Voir Retardataires'; btn.style.background='#dc3545'; info.innerText=''; }
+}
+function basculerDevise(){
+  let btn = document.getElementById('btnDevise');
+  if(deviseActuelle === '$'){ deviseActuelle = 'CDF'; btn.innerText = '💲 Afficher en Dollar'; btn.style.background = '#007bff'; }
+  else { deviseActuelle = '$'; btn.innerText = '💵 Afficher en CDF'; btn.style.background = '#ff9800'; }
+  document.querySelectorAll('#table input').forEach(inp=>{
+    let v = parseFloat(String(inp.value).replace(/[^0-9.-]/g,''));
+    if(isNaN(v) || v===0) return;
+    let td = inp.closest('td');
+    if(!td) return;
+    let tr = td.closest('tr');
+    let ths = document.querySelectorAll('#table tr:first-child th');
+    let idx = Array.from(tr.children).indexOf(td);
+    let titre = ths[idx] ? ths[idx].innerText.toLowerCase() : '';
+    if(titre.includes('montant') || titre.includes('reste') || titre.includes('profit') || titre.includes('payer') || titre.includes('rembours')){
+      if(deviseActuelle === 'CDF'){ inp.value = Math.round(v * tauxCDF); }
+      else { inp.value = Math.round(v / tauxCDF); }
+    }
+  });
+  document.querySelectorAll('#table td, #table th').forEach(td=>{
+    if(td.querySelector('input')) return;
+    let txt = td.innerText;
+    if(!txt.includes('$') && !txt.includes('CDF') && !txt.includes('FC')) return;
+    let nombre = parseFloat(txt.replace(/[^0-9.-]/g,''));
+    if(isNaN(nombre)) return;
+    if(deviseActuelle === 'CDF'){ if(txt.includes('$')) td.innerText = (nombre * tauxCDF).toLocaleString('fr-FR') + ' CDF'; }
+    else { if(txt.includes('CDF') || txt.includes('FC')) td.innerText = Math.round(nombre / tauxCDF) + ' $'; }
+  });
+}
+</script>
+<div id="ficheClient" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; justify-content:center; align-items:center;">
+  <div style="background:white; width:92%; max-width:400px; border-radius:15px; padding:18px; text-align:center; position:relative;">
+    <button onclick="fermerFiche()" style="position:absolute; top:8px; right:10px; background:red; color:white; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold;">X</button>
+    <div style="width:110px; height:110px; border-radius:50%; background:#e9f5ff; margin:0 auto; overflow:hidden; border:3px solid #007bff; display:flex; align-items:center; justify-content:center;">
+      <img id="fichePhoto" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+      <span id="ficheSansPhoto" style="font-size:50px;">👤</span>
+    </div>
+    <label style="color:#007bff; font-size:13px; cursor:pointer;"><b>📷 Changer la photo</b><input type="file" accept="image/*" onchange="changerPhoto(this)" style="display:none;"></label>
+    <h2 id="ficheNom" style="margin:8px 0 2px;">Nom Client</h2>
+    <div id="ficheTel" style="color:#555;">📞 0000000000</div>
+    <div id="ficheCode" style="display:inline-block; background:#007bff; color:white; padding:3px 10px; border-radius:20px; font-size:13px; margin-top:6px;">C001</div>
+    <div id="ficheStatut" style="display:inline-block; background:#ffe5e5; color:red; padding:3px 10px; border-radius:20px; font-size:13px; margin-top:6px;">Non payé</div>
+    <div style="text-align:left; background:#f8f9fa; border-radius:10px; padding:12px; margin-top:12px; font-size:15px; line-height:1.8;">
+      💰 <b>Montant prêté :</b> <span id="ficheMontant">0 $</span><br>
+      📈 <b>Profit :</b> <span id="ficheProfit">0 $</span><br>
+      🧾 <b>Total à rembourser :</b> <span id="ficheRemb">0 $</span><br>
+      ✅ <b>Déjà payé :</b> <span id="fichePaye">0 $</span><br>
+      🔴 <b>Reste à payer :</b> <b id="ficheReste" style="color:red;">0 $</b><br>
+      📅 <b>Date limite :</b> <span id="ficheDate">-</span><br>
+      ⭐ <b>Évolution :</b> <span id="ficheEvol">Bon</span>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button onclick="appelerFiche()" style="flex:1; background:#28a745;">📞 Appeler</button>
+      <button onclick="whatsappFiche()" style="flex:1; background:#25D366;">💬 WhatsApp</button>
+    </div>
+    <div id="ficheHisto" style="text-align:left; font-size:13px; color:#555; margin-top:10px; background:#fff3cd; padding:8px; border-radius:8px;">Historique : 1er crédit - En cours</div>
+  </div>
+</div>
+</body>
+</html>
