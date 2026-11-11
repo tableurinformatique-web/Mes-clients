@@ -1,17 +1,8 @@
 {
-  "name": "TABLEUR INFORMATIQUE",
+  "name": "TABLEUR",
   "short_name": "TABLEUR",
-  "description": "Tableur Informatique Lubumbashi - Gestion clients",
-  "start_url": "./index.html",
+  "start_url": "/Mes-clients/index.html",
   "display": "standalone",
-  "background_color": "#0b2e59",
-  "theme_color": "#0b2e59",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135755.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
-  ]
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8"
 }
