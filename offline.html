@@ -96,7 +96,7 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <button onclick="exporterWord()" class="btnOrange">📄 EXPORTER VERS WORD</button><br>
 <button onclick="telechargerSauvegarde()" class="btnVert" style="background:#0b2e59">💾 TÉLÉCHARGER LA SAUVEGARDE</button>
 <label class="btnRecu" style="display:inline-block; padding:9px 11px; margin:3px; border-radius:8px; background:#6f42c1; color:white; font-weight:bold; cursor:pointer; font-size:13px;">📂 CHARGER UNE SAUVEGARDE
-<input type="file" id="fichierSauvegarde" onchange="chargerSauvegarde(event)" style="display:none;">
+<input type="file" id="fichierSauvegarde" accept=".json,application/json" onchange="chargerSauvegarde(event)" style="display:none;">
 </label>
 </div>
 <div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
@@ -291,50 +291,74 @@ lignes+=`<tr><td>${r.querySelector(".code").value}</td><td>${r.querySelector(".n
 let html=`<html><head><meta charset='utf-8'></head><body style='font-family:Arial'><h1 style='text-align:center; color:#0b2e59'>TABLEUR INFORMATIQUE</h1><p style='text-align:center'>Lubumbashi - Tout en Dollars $ - Date : ${new Date().toLocaleDateString('fr-FR')}</p><p><b>Capital :</b> $ ${capital} | <b>Total Prêté :</b> ${totPrete} | <b>Total Profit :</b> ${totProfit}</p><table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; width:100%; font-size:12px'><tr style='background:#0b2e59; color:white'><th>Code</th><th>Nom</th><th>Tel</th><th>Montant</th><th>Date</th><th>Date Limite</th><th>%</th><th>Profit</th><th>Rembourse</th><th>Payé</th><th>Reste</th><th>Statut</th></tr>${lignes}</table><p>© TABLEUR INFORMATIQUE</p></body></html>`;
 let blob=new Blob(['\ufeff', html], {type:'application/msword'});
 let url=URL.createObjectURL(blob);
-let a=document.createElement("a"); a.href=url; a.download="TABLEUR-INFORMATIQUE-Clients.doc"; a.click();
-window.open(url, '_blank');
+let a=document.createElement("a"); a.href=url; a.download="TABLEUR-INFORMATIQUE-Clients.doc"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+setTimeout(()=>URL.revokeObjectURL(url), 2000);
 }
 function filtrer(){ let mot=document.getElementById("recherche").value.toLowerCase(); let rows=document.querySelectorAll("#table tr"); for(let i=1;i<rows.length;i++){ let r=rows[i]; let txt=r.querySelector(".nom").value.toLowerCase()+" "+r.querySelector(".code").value.toLowerCase()+" "+r.querySelector(".tel").value.toLowerCase(); r.style.display=txt.includes(mot)?"":"none"; } }
 function telechargerSauvegarde(){
-  let rows = document.querySelectorAll("#table tr");
-  let data = [];
-  for(let i=1; i<rows.length; i++){
-    let r = rows[i];
-    data.push({
-      code: r.querySelector(".code").value,
-      nom: r.querySelector(".nom").value,
-      tel: r.querySelector(".tel").value,
-      montant: r.querySelector(".montant").value,
-      date: r.querySelector(".date").value,
-      dateLimite: r.querySelector(".dateLimite").value,
-      pourc: r.querySelector(".pourc").value,
-      paye: r.querySelector(".paye").value,
-      dateRemb: r.querySelector(".dateRemb").value,
-      statut: r.querySelector(".statut").value,
-      evol: r.querySelector(".evol").value
-    });
+  try{
+    let rows = document.querySelectorAll("#table tr");
+    let data = [];
+    for(let i=1; i<rows.length; i++){
+      let r = rows[i];
+      data.push({
+        code: r.querySelector(".code").value,
+        nom: r.querySelector(".nom").value,
+        tel: r.querySelector(".tel").value,
+        montant: r.querySelector(".montant").value,
+        date: r.querySelector(".date").value,
+        dateLimite: r.querySelector(".dateLimite").value,
+        pourc: r.querySelector(".pourc").value,
+        paye: r.querySelector(".paye").value,
+        dateRemb: r.querySelector(".dateRemb").value,
+        statut: r.querySelector(".statut").value,
+        evol: r.querySelector(".evol").value
+      });
+    }
+    let sauvegardeComplete = {
+      capital: document.getElementById("capital").value,
+      pourcentage: document.getElementById("pourcGlobal").value,
+      clients: data,
+      dateSauvegarde: new Date().toLocaleString('fr-FR')
+    };
+    let texte = JSON.stringify(sauvegardeComplete, null, 2);
+    let dateJour = new Date().toISOString().split('T')[0];
+    let nomFichier = "SAUVEGARDE-TABLEUR-" + dateJour + ".json";
+    if(navigator.canShare && navigator.canShare({files: [new File([texte], nomFichier, {type:'application/json'})]})){
+      let fichier = new File([texte], nomFichier, {type:'application/json'});
+      navigator.share({files:[fichier], title:'Sauvegarde TABLEUR', text:'Voici ma sauvegarde'}).then(()=>{
+        alert("✅ Sauvegarde partagée ! Enregistre-la dans Fichiers / Drive / WhatsApp");
+      }).catch(()=>{ telechargerParLien(texte, nomFichier); });
+      return;
+    }
+    telechargerParLien(texte, nomFichier);
+  }catch(e){
+    alert("❌ Erreur téléchargement : "+e.message);
   }
-  let sauvegardeComplete = {
-    capital: document.getElementById("capital").value,
-    pourcentage: document.getElementById("pourcGlobal").value,
-    clients: data,
-    dateSauvegarde: new Date().toLocaleString('fr-FR')
-  };
-  let texte = JSON.stringify(sauvegardeComplete, null, 2);
-  let blob = new Blob([texte], {type: 'application/json'});
+}
+function telechargerParLien(texte, nomFichier){
+  let blob = new Blob([texte], {type:'application/json;charset=utf-8'});
   let url = URL.createObjectURL(blob);
   let a = document.createElement("a");
   a.href = url;
-  let dateJour = new Date().toISOString().split('T')[0];
-  a.download = "SAUVEGARDE-TABLEUR-" + dateJour + ".json";
+  a.download = nomFichier;
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
-  alert("✅ Sauvegarde téléchargée ! Gardez ce fichier en sécurité.");
+  setTimeout(()=>{
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert("✅ Si le fichier n'est pas dans Téléchargements, regarde en haut : Chrome te demande Autoriser le téléchargement.");
+  }, 1000);
 }
-/* ===== CHARGER UNE SAUVEGARDE - CORRIGÉ PRESIDENT V3 LABEL ===== */
 function chargerSauvegarde(event){
   let fichier = event.target.files[0];
   if(!fichier){ return; }
+  if(!fichier.name.toLowerCase().endsWith(".json")){
+    alert("❌ Choisis seulement un fichier .json - Ex: SAUVEGARDE-TABLEUR-....json");
+    event.target.value = "";
+    return;
+  }
   let lecteur = new FileReader();
   lecteur.onload = function(e){
     try {
