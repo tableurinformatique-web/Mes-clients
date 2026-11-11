@@ -1,138 +1,290 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="manifest" href="manifest-offline.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#007bff">
-<title>Liste de clients - Sans Internet</title>
+<title>TABLEUR INFORMATIQUE</title>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b2e59">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <style>
-body{font-family:Arial; padding:12px; background:#f2f2f2; margin:0}
-h2{text-align:center; margin:8px}
-.box{background:white; padding:12px; border-radius:10px; margin-bottom:10px; text-align:center}
-.vert{color:green} .rouge{color:red}
-button{padding:10px 14px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold}
-.btnRouge{background:#dc3545} .btnVert{background:#28a745} .btnNoir{background:#333}
-input,select{padding:9px; border:1px solid #ccc; border-radius:6px; font-size:15px; margin:3px}
-table{width:100%; background:white; border-collapse:collapse; margin-top:10px}
-th,td{border:1px solid #ddd; padding:7px; text-align:center; font-size:13px}
-th{background:#007bff; color:white}
+body{font-family:Arial; padding:10px; background:#eef2f7; margin:0}
+.header{background:#0b2e59; color:white; padding:14px; text-align:center; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:12px}
+.logo{width:55px; height:55px; background:#ff7a00; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; color:white; border:3px solid white; flex-shrink:0}
+.header h1{margin:0; font-size:22px}
+.header p{margin:2px; font-size:12px; opacity:.9}
+.dashboard{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:12px 0}
+.card{background:white; padding:10px; border-radius:10px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,.1)}
+.card b{font-size:18px; display:block}
+.card span{font-size:12px; color:#666}
+.card.rouge b{color:#dc3545} .card.vert b{color:#28a745} .card.bleu b{color:#007bff} .card.orange b{color:#ff7a00}
+.box{background:white; padding:12px; border-radius:10px; margin:10px 0; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,.1)}
+button{padding:9px 11px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold; cursor:pointer; font-size:13px}
+.btnRouge{background:#dc3545} .btnVert{background:#28a745} .btnNoir{background:#222} .btnOrange{background:#2b579a} .btnW{background:#25D366} .btnRecu{background:#6f42c1}
+input,select{padding:7px; border:1px solid #ccc; border-radius:6px; font-size:13px; width:95%}
+table{width:100%; background:white; border-collapse:collapse; margin-top:10px; font-size:12px}
+th,td{border:1px solid #ddd; padding:6px; text-align:center}
+th{background:#0b2e59; color:white}
+.total td{background:#d9e8ff; font-weight:bold}
 .bon{background:#d4edda} .moyen{background:#fff3cd} .mauvais{background:#f8d7da}
-#offlineBadge{background:#28a745; color:white; padding:6px 12px; border-radius:20px; font-size:13px; display:inline-block}
+.retard{background:#ffe0e0 !important}
+.badgeRetard{background:#dc3545; color:white; padding:3px 6px; border-radius:10px; font-size:11px; font-weight:bold}
+.badgeOK{background:#28a745; color:white; padding:3px 6px; border-radius:10px; font-size:11px}
+canvas{max-width:100%; background:white; border-radius:10px}
+#recuBox{display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:999; padding:20px; overflow:auto}
+#sauvegardeInfo{font-size:11px; color:#666; text-align:center; margin:4px 0}
+@media print{ .no-print{display:none !important} body{background:white} }
+table{min-width:1500px !important;}
+th{font-size:15px !important; padding:12px 8px !important; white-space:nowrap;}
+td{font-size:16px !important; padding:10px 8px !important;}
+td input, td select{font-size:16px !important; padding:10px 8px !important; min-width:115px !important; height:44px !important;}
+td:nth-child(1) input{min-width:100px !important;}
+td:nth-child(2) input{min-width:200px !important; font-weight:bold; background:#fff8e1;}
+td:nth-child(3) input{min-width:160px !important;}
+td:nth-child(5) input, td:nth-child(6) input, td:nth-child(13) input{min-width:155px !important;}
 </style>
 </head>
 <body>
-<h2>Liste de clients - SANS INTERNET</h2>
-<div style="text-align:center"><span id="offlineBadge">● PRÊT SANS INTERNET</span><br><small><a href="index.html">↩ Aller à la version avec internet</a></small></div><br>
 
-<div class="box">
-<b>Capital : <input id="capital" type="number" value="100000" style="width:110px" oninput="calculer()"></b>
-<b>Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px" oninput="calculer()"> %</b>
-<br><br>
-<b>Total Prêté : <span id="tPrete">0</span></b> | <b>Profit : <span id="tProfit">0</span></b> | <b>Capital Actuel : <span id="tCapital">0</span></b>
-<br><b id="evolCapital" class="vert">📈 CAPITAL AGRANDIT</b>
+<div class="header">
+<div class="logo">TI</div>
+<div style="text-align:left"><h1>TABLEUR INFORMATIQUE</h1><p>Gestion des Crédits Clients - Lubumbashi - En Dollars $</p></div>
+</div>
+
+<div class="dashboard">
+<div class="card bleu"><b id="dClients">0</b><span>Clients Total</span></div>
+<div class="card vert"><b id="dPaye">0</b><span>Clients Payés</span></div>
+<div class="card rouge"><b id="dNonPaye">0</b><span>Non Payés</span></div>
+<div class="card rouge"><b id="dRetard">0</b><span>⚠️ EN RETARD</span></div>
+<div class="card bleu"><b id="tPrete">$ 0</b><span>Total Prêté</span></div>
+<div class="card vert"><b id="tProfit">$ 0</b><span>Total Profit</span></div>
+<div class="card orange"><b id="tReste">$ 0</b><span>À Récupérer</span></div>
+<div class="card bleu"><b id="tRemb">$ 0</b><span>Total Rembourse</span></div>
+<div class="card vert"><b id="tCapital">$ 0</b><span>Capital Actuel</span></div>
 </div>
 
 <div class="box">
-<b>➕ NOUVEAU CLIENT :</b><br><br>
-<input id="inNom" placeholder="Nom du client">
-<input id="inTel" placeholder="Téléphone 097...">
-<input id="inMontant" type="number" placeholder="Montant">
-<br><br>
-<button class="btnVert" onclick="ajouterDepuisForm()">AJOUTER LE CLIENT</button>
+Capital de départ : <input id="capital" type="number" value="1000" style="width:100px" oninput="calculer()"> $<br>
+Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px" oninput="changerPourc()"> %<br>
+<b id="evolCapital">📈 CAPITAL AGRANDIT</b>
 </div>
 
 <div class="box">
-🔍 Recherche : <input id="recherche" placeholder="Nom ou téléphone..." oninput="filtrer()" style="width:80%">
+<b>📊 GRAPHIQUE DE TON CAPITAL</b><br>
+<canvas id="graph" width="340" height="140"></canvas><br>
+<span style="font-size:12px"><span style="color:#007bff">■ Prêté</span> <span style="color:#28a745">■ Profit</span> <span style="color:#dc3545">■ À Récupérer</span></span>
+</div>
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">
+  <div id="boxRetard" style="flex:1; min-width:250px; background:#ffe5e5; border:2px solid red; border-radius:10px; padding:12px; text-align:center;">
+    <div style="font-weight:bold; color:red; font-size:16px;">🔴 CLIENTS EN RETARD</div>
+    <div id="listeRetard" style="font-size:15px; margin-top:6px; color:#333;">Aucun retard - Bravo Président !</div>
+    <div id="totalRetard" style="font-weight:bold; margin-top:6px;"></div>
+  </div>
+  <div style="flex:1; min-width:250px; background:#e8f5e9; border:2px solid green; border-radius:10px; padding:12px; text-align:center;">
+    <div style="font-weight:bold; color:green; font-size:16px;">📅 CE MOIS-CI</div>
+    <div id="totalMois" style="font-size:18px; margin-top:6px; font-weight:bold;">Profit du mois : 0 $</div>
+    <div id="totalMoisRemb" style="font-size:14px; margin-top:4px;">À récupérer ce mois : 0 $</div>
+  </div>
 </div>
 
+<div class="box no-print">
+🔍 Recherche : <input id="recherche" placeholder="Nom, Code ou Téléphone..." oninput="filtrer()" style="width:80%"><br><br>
+<button onclick="ajouter()">+ Ajouter client</button>
+<button onclick="calculer()" class="btnVert">CALCULER + SAUVEGARDER</button><br>
+<button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER / PDF</button>
+<button onclick="exporterWord()" class="btnOrange">📄 EXPORTER VERS WORD</button><br>
+<button onclick="telechargerSauvegarde()" class="btnVert" style="background:#0b2e59">💾 TÉLÉCHARGER LA SAUVEGARDE</button>
+<button onclick="ouvrirFichier()" class="btnRecu">📂 CHARGER UNE SAUVEGARDE</button>
+<input type="file" id="fichierSauvegarde" onchange="chargerSauvegarde(event)" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+</div>
+<div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
+<div style="display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap;">
+  <button id="btnFiltre" onclick="filtrerRetard()" style="background:#dc3545; padding:10px 14px;">🔴 Voir Retardataires</button>
+  <button id="btnDevise" onclick="basculerDevise()" style="background:#ff9800; padding:10px 14px;">💵 Afficher en CDF</button>
+<div id="infoFiltre" style="text-align:center; font-size:13px; color:#555; margin-bottom:5px;"></div>
+
+<div style="overflow-x:auto">
 <table id="table">
-<tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant</th><th>Date</th><th>%</th><th>Profit</th><th>Rembourse</th><th>Statut</th><th>Évolution</th><th>Supprimer</th></tr>
+<tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant $</th><th>Date crédit</th><th>Date Limite</th><th>Alerte</th><th>%</th><th>Profit $</th><th>Rembourse $</th><th>Payé $</th><th>Reste $</th><th>Date Remb.</th><th>Statut</th><th>Évolution</th><th class="no-print">WhatsApp</th><th class="no-print">Reçu</th><th class="no-print">X</th></tr>
 </table>
+</div>
 
-<div class="box">
-<button onclick="exporter()">⬇️ Télécharger Sauvegarde</button>
-<button class="btnNoir" onclick="document.getElementById('fileImport').click()">⬆️ Restaurer Sauvegarde</button>
-<input type="file" id="fileImport" accept=".json,application/json" style="display:none" onchange="importer(event)">
-<br><small>Tes données restent dans ton téléphone, même sans internet.</small>
+<table style="margin-top:0"><tr class="total"><td>TOTAL $</td><td id="ftPrete">0</td><td id="ftProfit">0</td><td id="ftRemb">0</td><td id="ftPaye">0</td><td id="ftReste">0</td></tr></table>
+<p style="text-align:center; font-size:12px; color:#666">© TABLEUR INFORMATIQUE - Tout en Dollars $</p>
+
+<div id="recuBox">
+<div id="recuContenu"></div>
+<div class="no-print" style="text-align:center; margin-top:15px">
+<button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER LE REÇU</button>
+<button onclick="document.getElementById('recuBox').style.display='none'" class="btnRouge">FERMER</button>
+</div>
 </div>
 
 <script>
-let n=0;
-function creerLigne(c){
-n++;
+let timerSauvegarde=null;
+function sauvegarderMaintenant(){
+  try{
+    let rows=document.querySelectorAll("#table tr");
+    let data=[];
+    for(let i=1;i<rows.length;i++){
+      let r=rows[i];
+      data.push({
+        code:r.querySelector(".code").value,
+        nom:r.querySelector(".nom").value,
+        tel:r.querySelector(".tel").value,
+        montant:r.querySelector(".montant").value,
+        date:r.querySelector(".date").value,
+        dateLimite:r.querySelector(".dateLimite").value,
+        pourc:r.querySelector(".pourc").value,
+        paye:r.querySelector(".paye").value,
+        dateRemb:r.querySelector(".dateRemb").value,
+        statut:r.querySelector(".statut").value,
+        evol:r.querySelector(".evol").value
+      });
+    }
+    localStorage.setItem("clients_pro",JSON.stringify(data));
+    localStorage.setItem("capital_pro",document.getElementById("capital").value);
+    localStorage.setItem("pourc_pro",document.getElementById("pourcGlobal").value);
+    let info=document.getElementById("sauvegardeInfo");
+    if(info){ info.innerText="💾 Sauvegardé à "+new Date().toLocaleTimeString('fr-FR'); }
+  }catch(e){ console.log("Erreur sauvegarde:",e); }
+}
+function sauvegardeDifferee(){
+  clearTimeout(timerSauvegarde);
+  timerSauvegarde=setTimeout(sauvegarderMaintenant, 300);
+}
+function creerLigne(c={}){
 let tr=document.createElement("tr");
-let pourc=c.pourc!==undefined?c.pourc:Number(document.getElementById("pourcGlobal").value||30);
-let montant=Number(c.montant||0);
-let profit=Math.round(montant*pourc/100);
-tr.innerHTML=`<td>C${String(n).padStart(3,'0')}</td><td>${c.nom||''}</td><td>${c.tel||''}</td><td>${montant}</td><td>${c.date||new Date().toISOString().slice(0,10)}</td><td>${pourc}%</td><td>${profit}</td><td>${montant+profit}</td>
-<td><select onchange="calculer()"><option>Non payé</option><option>Payé partiel</option><option>Payé</option></select></td>
-<td><select class="evol" onchange="colorEvol(this);calculer()"><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></td>
-<td><button class="btnRouge" onclick="supprimer(this)">X</button></td>`;
+let pourc=c.pourc!==undefined?c.pourc:(document.getElementById("pourcGlobal").value||30);
+tr.innerHTML=`
+<td><input class="code" value="${c.code||''}" placeholder="C001" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="nom" value="${c.nom||''}" placeholder="Nom" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="tel" value="${c.tel||''}" placeholder="097..." oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="montant" type="number" value="${c.montant||''}" placeholder="0" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="date" type="date" value="${c.date||''}" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="dateLimite" type="date" value="${c.dateLimite||''}" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td class="alerte">-</td>
+<td><input class="pourc" type="number" value="${pourc}" oninput="calculer()" onchange="sauvegarderMaintenant()" style="width:50px">%</td>
+<td class="profit">0</td>
+<td class="remb">0</td>
+<td><input class="paye" type="number" value="${c.paye||0}" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td class="reste">0</td>
+<td><input class="dateRemb" type="date" value="${c.dateRemb||''}" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><select class="statut" onchange="calculer();sauvegarderMaintenant()"><option>Non payé</option><option>Payé partiel</option><option>Payé</option></select></td>
+<td><select class="evol" onchange="colorEvol(this);calculer();sauvegarderMaintenant()"><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></td>
+<td class="no-print"><button class="btnW" onclick="whatsapp(this)">💬 WhatsApp</button></td>
+<td class="no-print"><button class="btnRecu" onclick="voirRecu(this)">🧾 Reçu</button></td>
+<td class="no-print"><button class="btnRouge" onclick="supprimer(this)">X</button></td>`;
 document.getElementById("table").appendChild(tr);
-if(c.statut) tr.querySelectorAll("select")[0].value=c.statut;
-if(c.evol) tr.querySelectorAll("select")[1].value=c.evol;
+if(c.statut) tr.querySelector(".statut").value=c.statut;
+if(c.evol) tr.querySelector(".evol").value=c.evol;
 colorEvol(tr.querySelector(".evol"));
 }
+function changerPourc(){ let v=document.getElementById("pourcGlobal").value||30; document.querySelectorAll(".pourc").forEach(i=>i.value=v); calculer(); sauvegarderMaintenant(); }
 function colorEvol(sel){ sel.classList.remove("bon","moyen","mauvais"); if(sel.value=="Bon") sel.classList.add("bon"); if(sel.value=="Moyen") sel.classList.add("moyen"); if(sel.value=="Mauvais") sel.classList.add("mauvais"); }
-function ajouterDepuisForm(){
-let nom=document.getElementById("inNom").value.trim();
-let tel=document.getElementById("inTel").value.trim();
-let montant=document.getElementById("inMontant").value;
-if(!nom){ alert("Mets le Nom d'abord"); return; }
-if(!montant){ alert("Mets le Montant"); return; }
-creerLigne({nom:nom, tel:tel, montant:montant, date:new Date().toISOString().slice(0,10), statut:"Non payé", evol:"Bon"});
-document.getElementById("inNom").value=""; document.getElementById("inTel").value=""; document.getElementById("inMontant").value="";
-calculer();
-}
-function supprimer(btn){ if(confirm("Supprimer ?")){ btn.closest("tr").remove(); calculer(); } }
+function ajouter(){ creerLigne({}); calculer(); sauvegarderMaintenant(); }
+function supprimer(btn){ if(confirm("Supprimer ce client ?")){ btn.closest("tr").remove(); calculer(); sauvegarderMaintenant(); } }
 function calculer(){
 let rows=document.querySelectorAll("#table tr");
-let totPrete=0, totProfit=0; let data=[];
+let totPrete=0, totProfit=0, totRemb=0, totPaye=0, totReste=0;
+let nbPaye=0, nbNon=0, nbRetard=0;
+let aujourd=new Date(); aujourd.setHours(0,0,0,0);
 for(let i=1;i<rows.length;i++){
-let cells=rows[i].querySelectorAll("td");
-let montant=Number(cells[3].innerText||0);
-let pourc=Number(document.getElementById("pourcGlobal").value||30);
+let r=rows[i];
+let montant=Number(r.querySelector(".montant").value||0);
+let pourc=Number(r.querySelector(".pourc").value||30);
+let paye=Number(r.querySelector(".paye").value||0);
 let profit=Math.round(montant*pourc/100);
-cells[5].innerText=pourc+"%"; cells[6].innerText=profit; cells[7].innerText=montant+profit;
-totPrete+=montant; totProfit+=profit;
-data.push({nom:cells[1].innerText, tel:cells[2].innerText, montant:montant, date:cells[4].innerText, pourc:pourc, statut:rows[i].querySelectorAll("select")[0].value, evol:rows[i].querySelectorAll("select")[1].value});
+let remb=montant+profit;
+let reste=remb-paye;
+r.querySelector(".profit").innerText=profit;
+r.querySelector(".remb").innerText=remb;
+r.querySelector(".reste").innerText=reste;
+r.querySelector(".reste").style.color=reste<=0?"green":"red";
+let statut=r.querySelector(".statut").value;
+if(statut=="Payé") nbPaye++; else nbNon++;
+let lim=r.querySelector(".dateLimite").value;
+let alerteCell=r.querySelector(".alerte");
+let enRetard=false;
+if(lim && reste>0){ let dLim=new Date(lim); if(dLim<aujourd){ enRetard=true; } }
+if(enRetard){ alerteCell.innerHTML='<span class="badgeRetard">⚠️ EN RETARD</span>'; r.classList.add("retard"); nbRetard++; }
+else if(reste<=0){ alerteCell.innerHTML='<span class="badgeOK">✅ OK</span>'; r.classList.remove("retard"); }
+else { alerteCell.innerHTML='-'; r.classList.remove("retard"); }
+totPrete+=montant; totProfit+=profit; totRemb+=remb; totPaye+=paye; totReste+=reste;
 }
 let capital=Number(document.getElementById("capital").value||0);
-document.getElementById("tPrete").innerText=totPrete;
-document.getElementById("tProfit").innerText=totProfit;
-document.getElementById("tCapital").innerText=capital+totProfit;
+document.getElementById("dClients").innerText=rows.length-1;
+document.getElementById("dPaye").innerText=nbPaye;
+document.getElementById("dNonPaye").innerText=nbNon;
+document.getElementById("dRetard").innerText=nbRetard;
+document.getElementById("tPrete").innerText="$ "+totPrete;
+document.getElementById("tProfit").innerText="$ "+totProfit;
+document.getElementById("tRemb").innerText="$ "+totRemb;
+document.getElementById("tReste").innerText="$ "+totReste;
+document.getElementById("tCapital").innerText="$ "+(capital+totProfit);
+document.getElementById("ftPrete").innerText=totPrete;
+document.getElementById("ftProfit").innerText=totProfit;
+document.getElementById("ftRemb").innerText=totRemb;
+document.getElementById("ftPaye").innerText=totPaye;
+document.getElementById("ftReste").innerText=totReste;
 let ev=document.getElementById("evolCapital");
-if(totProfit>0){ ev.innerText="📈 CAPITAL AGRANDIT +"+totProfit; ev.className="vert"; }
-else if(totProfit==0){ ev.innerText="➖ CAPITAL STABLE"; ev.className=""; }
-localStorage.setItem("clients_final",JSON.stringify(data));
-localStorage.setItem("capital_final",capital);
-localStorage.setItem("pourc_final",document.getElementById("pourcGlobal").value);
+ev.innerText=totProfit>0?"📈 CAPITAL AGRANDIT + $"+totProfit:"➖ CAPITAL STABLE";
+dessinerGraph(totPrete, totProfit, totReste);
+sauvegardeDifferee();
 }
-function filtrer(){
-let mot=document.getElementById("recherche").value.toLowerCase();
+function dessinerGraph(prete, profit, reste){
+let c=document.getElementById("graph"); let ctx=c.getContext("2d"); ctx.clearRect(0,0,c.width,c.height);
+let max=Math.max(prete, profit, reste, 1);
+let vals=[prete, profit, reste]; let colors=["#007bff","#28a745","#dc3545"]; let labels=["Prêté","Profit","À Récup."];
+vals.forEach((v,i)=>{
+let h=(v/max)*100;
+ctx.fillStyle=colors[i]; ctx.fillRect(40+i*90, 120-h, 60, h);
+ctx.fillStyle="#222"; ctx.font="bold 12px Arial"; ctx.textAlign="center";
+ctx.fillText("$"+v, 70+i*90, 115-h);
+ctx.fillText(labels[i], 70+i*90, 135);
+});
+}
+function whatsapp(btn){
+let r=btn.closest("tr");
+let nom=r.querySelector(".nom").value||"Client";
+let tel=r.querySelector(".tel").value||"";
+let reste=r.querySelector(".reste").innerText;
+let lim=r.querySelector(".dateLimite").value||"";
+let telClean=tel.replace(/[^0-9]/g,"");
+if(telClean.startsWith("0")) telClean="243"+telClean.substring(1);
+let msg=`Bonjour ${nom}, c'est TABLEUR INFORMATIQUE. Rappel : il vous reste $ ${reste} à payer. Date limite : ${lim}. Merci de régulariser.`;
+window.open("https://wa.me/"+telClean+"?text="+encodeURIComponent(msg), "_blank");
+}
+function voirRecu(btn){
+let r=btn.closest("tr");
+let nom=r.querySelector(".nom").value||"";
+let tel=r.querySelector(".tel").value||"";
+let montant=r.querySelector(".montant").value||"0";
+let profit=r.querySelector(".profit").innerText;
+let remb=r.querySelector(".remb").innerText;
+let paye=r.querySelector(".paye").value||"0";
+let reste=r.querySelector(".reste").innerText;
+let dateR=r.querySelector(".dateRemb").value||new Date().toLocaleDateString('fr-FR');
+let code=r.querySelector(".code").value||"";
+document.getElementById("recuContenu").innerHTML=`
+<div style="max-width:500px; margin:auto; border:2px solid #0b2e59; padding:20px; border-radius:10px; font-family:Arial">
+<div style="text-align:center"><div style="width:60px;height:60px;background:#ff7a00;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:26px;font-weight:bold">TI</div><h2 style="margin:5px; color:#0b2e59">TABLEUR INFORMATIQUE</h2><p>Lubumbashi - Reçu de Paiement</p><hr></div>
+<p><b>Reçu N° :</b> ${code} | <b>Date :</b> ${dateR}</p>
+<p><b>Client :</b> ${nom}<br><b>Téléphone :</b> ${tel}</p>
+<table style="width:100%; border-collapse:collapse"><tr><td style="border:1px solid #ccc; padding:8px">Montant Crédité</td><td style="border:1px solid #ccc; padding:8px">$ ${montant}</td></tr><tr><td style="border:1px solid #ccc; padding:8px">Profit</td><td style="border:1px solid #ccc; padding:8px">$ ${profit}</td></tr><tr><td style="border:1px solid #ccc; padding:8px">Total à Rembourser</td><td style="border:1px solid #ccc; padding:8px"><b>$ ${remb}</b></td></tr><tr><td style="border:1px solid #ccc; padding:8px">Montant Payé</td><td style="border:1px solid #ccc; padding:8px">$ ${paye}</td></tr><tr><td style="border:1px solid #ccc; padding:8px">Reste à Payer</td><td style="border:1px solid #ccc; padding:8px"><b>$ ${reste}</b></td></tr></table>
+<br><br><p>Signature Client : ________________ &nbsp;&nbsp; Signature TABLEUR : ________________</p><p style="text-align:center; font-size:12px">Merci pour votre confiance !</p>
+</div>`;
+document.getElementById("recuBox").style.display="block";
+}
+function exporterWord(){
+let capital=document.getElementById("capital").value;
+let totPrete=document.getElementById("tPrete").innerText;
+let totProfit=document.getElementById("tProfit").innerText;
 let rows=document.querySelectorAll("#table tr");
-for(let i=1;i<rows.length;i++){ rows[i].style.display=rows[i].innerText.toLowerCase().includes(mot)?"":"none"; }
+let lignes="";
+for(let i=1;i<rows.length;i++){
+let r=rows[i];
+lignes+=`<tr><td>${r.querySelector(".code").value}</td><td>${r.querySelector(".nom").value}</td><td>${r.querySelector(".tel").value}</td><td>$ ${r.querySelector(".montant").value}</td><td>${r.querySelector(".date").value}</td><td>${r.querySelector(".dateLimite").value}</td><td>${r.querySelector(".pourc").value}%</td><td>$ ${r.querySelector(".profit").innerText}</td><td>$ ${r.querySelector(".remb").innerText}</td><td>$ ${r.querySelector(".paye").value}</td><td>$ ${r.querySelector(".reste").innerText}</td><td>${r.querySelector(".statut").value}</td></tr>`;
 }
-function exporter(){
-let d={clients:localStorage.getItem("clients_final"), capital:localStorage.getItem("capital_final"), pourc:localStorage.getItem("pourc_final")};
-let blob=new Blob([JSON.stringify(d)],{type:"application/json"});
-let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="sauvegarde-clients.json"; a.click();
-}
-function importer(e){
-let f=e.target.files[0]; if(!f) return;
-let r=new FileReader(); r.onload=function(){ try{ let d=JSON.parse(r.result); if(d.capital) document.getElementById("capital").value=d.capital; if(d.pourc) document.getElementById("pourcGlobal").value=d.pourc; document.querySelectorAll("#table tr").forEach((tr,i)=>{ if(i>0) tr.remove(); }); n=0; JSON.parse(d.clients||"[]").forEach(c=>creerLigne(c)); calculer(); alert("Restauré !"); }catch(err){ alert("Fichier invalide"); } }; r.readAsText(f);
-}
-window.onload=function(){
-let cap=localStorage.getItem("capital_final"); if(cap) document.getElementById("capital").value=cap;
-let pf=localStorage.getItem("pourc_final"); if(pf) document.getElementById("pourcGlobal").value=pf;
-let sauve=localStorage.getItem("clients_final");
-if(sauve && JSON.parse(sauve).length>0){ JSON.parse(sauve).forEach(c=>creerLigne(c)); }
-calculer();
-function majBadge(){ let b=document.getElementById("offlineBadge"); if(navigator.onLine){ b.innerText="● EN LIGNE"; b.style.background="#007bff"; } else { b.innerText="● MODE SANS INTERNET - ÇA MARCHE"; b.style.background="#28a745"; } }
-window.addEventListener("online",majBadge); window.addEventListener("offline",majBadge); majBadge();
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
-}
-</script>
-</body>
-</html>
+let html=`<html><head><meta charset='utf-8'></head><body style='font-family:Arial'><h1 style='text-align:center; color:#0b2e59'>TABLEUR INFORMATIQUE</h1><p style='text-align:center'>Lubumbashi - Tout
