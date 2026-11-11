@@ -100,7 +100,7 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <button onclick="exporterWord()" class="btnOrange">📄 EXPORTER VERS WORD</button><br>
 <button onclick="telechargerSauvegarde()" class="btnVert" style="background:#0b2e59">💾 TÉLÉCHARGER LA SAUVEGARDE</button>
 <button onclick="document.getElementById('fichierSauvegarde').click()" class="btnRecu">📂 CHARGER UNE SAUVEGARDE</button>
-<input type="file" id="fichierSauvegarde" accept=".json" onchange="chargerSauvegarde(event)" style="display:none">
+<input type="file" id="fichierSauvegarde" accept=".json,application/json,text/*,*/*" onchange="chargerSauvegarde(event)" style="display:none">
 </div>
 <div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
   <!-- BOUTONS PRESIDENT 8 et 9 -->
