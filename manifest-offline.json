@@ -1,0 +1,8 @@
+{
+  "name": "TABLEURoffline",
+  "short_name": "TABLEURoffline",
+  "start_url": "/Mes-clients/offline.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e"
+}
