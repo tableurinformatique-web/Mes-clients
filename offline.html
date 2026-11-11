@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#007bff">
+<title>Liste de clients - Sans Internet</title>
+<link rel="manifest" href="manifest.json">
+<style>
+body{font-family:Arial; padding:12px; background:#f2f2f2; margin:0}
+h2{text-align:center; margin:8px}
+.box{background:white; padding:12px; border-radius:10px; margin-bottom:10px; text-align:center}
+.vert{color:green} .rouge{color:red}
+button{padding:10px 14px; margin:3px; border:none; border-radius:8px; background:#007bff; color:white; font-weight:bold}
+.btnRouge{background:#dc3545} .btnVert{background:#28a745} .btnNoir{background:#333}
+input,select{padding:9px; border:1px solid #ccc; border-radius:6px; font-size:15px; margin:3px}
+table{width:100%; background:white; border-collapse:collapse; margin-top:10px}
+th,td{border:1px solid #ddd; padding:7px; text-align:center; font-size:13px}
+th{background:#007bff; color:white}
+.bon{background:#d4edda} .moyen{background:#fff3cd} .mauvais{background:#f8d7da}
+#offlineBadge{background:#28a745; color:white; padding:6px 12px; border-radius:20px; font-size:13px; display:inline-block}
+</style>
+</head>
+<body>
+<h2>Liste de clients - SANS INTERNET</h2>
+<div style="text-align:center"><span id="offlineBadge">● PRÊT SANS INTERNET</span><br><small><a href="index.html">↩ Aller à la version avec internet</a></small></div><br>
+
+<div class="box">
+<b>Capital : <input id="capital" type="number" value="100000" style="width:110px" oninput="calculer()"></b>
+<b>Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px" oninput="calculer()"> %</b>
+<br><br>
+<b>Total Prêté : <span id="tPrete">0</span></b> | <b>Profit : <span id="tProfit">0</span></b> | <b>Capital Actuel : <span id="tCapital">0</span></b>
+<br><b id="evolCapital" class="vert">📈 CAPITAL AGRANDIT</b>
+</div>
+
+<div class="box">
+<b>➕ NOUVEAU CLIENT :</b><br><br>
+<input id="inNom" placeholder="Nom du client">
+<input id="inTel" placeholder="Téléphone 097...">
+<input id="inMontant" type="number" placeholder="Montant">
+<br><br>
+<button class="btnVert" onclick="ajouterDepuisForm()">AJOUTER LE CLIENT</button>
+</div>
+
+<div class="box">
+🔍 Recherche : <input id="recherche" placeholder="Nom ou téléphone..." oninput="filtrer()" style="width:80%">
+</div>
+
+<table id="table">
+<tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant</th><th>Date</th><th>%</th><th>Profit</th><th>Rembourse</th><th>Statut</th><th>Évolution</th><th>Supprimer</th></tr>
+</table>
+
+<div class="box">
+<button onclick="exporter()">⬇️ Télécharger Sauvegarde</button>
+<button class="btnNoir" onclick="document.getElementById('fileImport').click()">⬆️ Restaurer Sauvegarde</button>
+<input type="file" id="fileImport" style="display:none" onchange="importer(event)">
+<br><small>Tes données restent dans ton téléphone, même sans internet.</small>
+</div>
+
+<script>
+let n=0;
+function creerLigne(c){
+n++;
+let tr=document.createElement("tr");
+let pourc=c.pourc!==undefined?c.pourc:Number(document.getElementById("pourcGlobal").value||30);
+let montant=Number(c.montant||0);
+let profit=Math.round(montant*pourc/100);
+tr.innerHTML=`<td>C${String(n).padStart(3,'0')}</td><td>${c.nom||''}</td><td>${c.tel||''}</td><td>${montant}</td><td>${c.date||new Date().toISOString().slice(0,10)}</td><td>${pourc}%</td><td>${profit}</td><td>${montant+profit}</td>
+<td><select onchange="calculer()"><option>Non payé</option><option>Payé partiel</option><option>Payé</option></select></td>
+<td><select class="evol" onchange="colorEvol(this);calculer()"><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></td>
+<td><button class="btnRouge" onclick="supprimer(this)">X</button></td>`;
+document.getElementById("table").appendChild(tr);
+if(c.statut) tr.querySelectorAll("select")[0].value=c.statut;
+if(c.evol) tr.querySelectorAll("select")[1].value=c.evol;
+colorEvol(tr.querySelector(".evol"));
+}
+function colorEvol(sel){ sel.classList.remove("bon","moyen","mauvais"); if(sel.value=="Bon") sel.classList.add("bon"); if(sel.value=="Moyen") sel.classList.add("moyen"); if(sel.value=="Mauvais") sel.classList.add("mauvais"); }
+function ajouterDepuisForm(){
+let nom=document.getElementById("inNom").value.trim();
+let tel=document.getElementById("inTel").value.trim();
+let montant=document.getElementById("inMontant").value;
+if(!nom){ alert("Mets le Nom d'abord"); return; }
+if(!montant){ alert("Mets le Montant"); return; }
+creerLigne({nom:nom, tel:tel, montant:montant, date:new Date().toISOString().slice(0,10), statut:"Non payé", evol:"Bon"});
+document.getElementById("inNom").value=""; document.getElementById("inTel").value=""; document.getElementById("inMontant").value="";
+calculer();
+}
+function supprimer(btn){ if(confirm("Supprimer ?")){ btn.closest("tr").remove(); calculer(); } }
+function calculer(){
+let rows=document.querySelectorAll("#table tr");
+let totPrete=0, totProfit=0; let data=[];
+for(let i=1;i<rows.length;i++){
+let cells=rows[i].querySelectorAll("td");
+let montant=Number(cells[3].innerText||0);
+let pourc=Number(document.getElementById("pourcGlobal").value||30);
+let profit=Math.round(montant*pourc/100);
+cells[5].innerText=pourc+"%"; cells[6].innerText=profit; cells[7].innerText=montant+profit;
+totPrete+=montant; totProfit+=profit;
+data.push({nom:cells[1].innerText, tel:cells[2].innerText, montant:montant, date:cells[4].innerText, pourc:pourc, statut:rows[i].querySelectorAll("select")[0].value, evol:rows[i].querySelectorAll("select")[1].value});
+}
+let capital=Number(document.getElementById("capital").value||0);
+document.getElementById("tPrete").innerText=totPrete;
+document.getElementById("tProfit").innerText=totProfit;
+document.getElementById("tCapital").innerText=capital+totProfit;
+let ev=document.getElementById("evolCapital");
+if(totProfit>0){ ev.innerText="📈 CAPITAL AGRANDIT +"+totProfit; ev.className="vert"; }
+else if(totProfit==0){ ev.innerText="➖ CAPITAL STABLE"; ev.className=""; }
+localStorage.setItem("clients_final",JSON.stringify(data));
+localStorage.setItem("capital_final",capital);
+localStorage.setItem("pourc_final",document.getElementById("pourcGlobal").value);
+}
+function filtrer(){
+let mot=document.getElementById("recherche").value.toLowerCase();
+let rows=document.querySelectorAll("#table tr");
+for(let i=1;i<rows.length;i++){ rows[i].style.display=rows[i].innerText.toLowerCase().includes(mot)?"":"none"; }
+}
+function exporter(){
+let d={clients:localStorage.getItem("clients_final"), capital:localStorage.getItem("capital_final"), pourc:localStorage.getItem("pourc_final")};
+let blob=new Blob([JSON.stringify(d)],{type:"application/json"});
+let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="sauvegarde-clients.json"; a.click();
+}
+function importer(e){
+let f=e.target.files[0]; if(!f) return;
+let r=new FileReader(); r.onload=function(){ try{ let d=JSON.parse(r.result); if(d.capital) document.getElementById("capital").value=d.capital; if(d.pourc) document.getElementById("pourcGlobal").value=d.pourc; document.querySelectorAll("#table tr").forEach((tr,i)=>{ if(i>0) tr.remove(); }); n=0; JSON.parse(d.clients||"[]").forEach(c=>creerLigne(c)); calculer(); alert("Restauré !"); }catch(err){ alert("Fichier invalide"); } }; r.readAsText(f);
+}
+window.onload=function(){
+let cap=localStorage.getItem("capital_final"); if(cap) document.getElementById("capital").value=cap;
+let pf=localStorage.getItem("pourc_final"); if(pf) document.getElementById("pourcGlobal").value=pf;
+let sauve=localStorage.getItem("clients_final");
+if(sauve && JSON.parse(sauve).length>0){ JSON.parse(sauve).forEach(c=>creerLigne(c)); }
+calculer();
+function majBadge(){ let b=document.getElementById("offlineBadge"); if(navigator.onLine){ b.innerText="● EN LIGNE"; b.style.background="#007bff"; } else { b.innerText="● MODE SANS INTERNET - ÇA MARCHE"; b.style.background="#28a745"; } }
+window.addEventListener("online",majBadge); window.addEventListener("offline",majBadge); majBadge();
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+}
+</script>
+</body>
+</html>
