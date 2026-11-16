@@ -9,6 +9,29 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
+  /* --- FIX RECU BIEN ALIGNE --- */
+#recuBox, #recu, .recu {
+  width: 100% !important;
+  max-width: 420px !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  padding: 15px !important;
+}
+#recuBox table, #recu table, .recu table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
+#recuBox td, #recuBox th, #recu td, #recu th {
+  padding: 6px 4px !important;
+  font-size: 13px !important;
+  word-wrap: break-word !important;
+  text-align: left !important;
+}
+#recuBox td:last-child, #recu td:last-child {
+  text-align: right !important;
+  font-weight: bold !important;
+}
 body{font-family:Arial; padding:10px; background:#eef2f7; margin:0}
 .header{background:#0b2e59; color:white; padding:14px; text-align:center; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:12px}
 .logo{width:55px; height:55px; background:#ff7a00; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; color:white; border:3px solid white; flex-shrink:0}
