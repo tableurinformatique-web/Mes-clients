@@ -107,6 +107,9 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <div class="box no-print">
 🔍 Recherche : <input id="recherche" placeholder="Nom, Code ou Téléphone..." oninput="filtrer()" style="width:80%"><br><br>
 <button onclick="ajouter()">+ Ajouter client</button>
+  <br>
+<button onclick="cloturerMois()" style="background:#6f42c1">📦 CLÔTURER LE MOIS</button>
+<button onclick="afficherHistorique()" style="background:#ff9800">📂 VOIR HISTORIQUE</button><br>
 <button onclick="calculer()" class="btnVert">CALCULER + SAUVEGARDER</button><br>
 <button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER / PDF</button>
 <button onclick="exporterWord()" class="btnOrange">📄 EXPORTER VERS WORD</button><br>
@@ -116,6 +119,11 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 </label>
 </div>
 <div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
+  <div id="boxHistorique" style="display:none; background:white; padding:12px; border-radius:10px; margin:10px 0; box-shadow:0 2px 5px rgba(0,0,0,.1)">
+<b>📂 HISTORIQUE DES MOIS</b>
+<div id="listeHistorique" style="margin-top:8px; font-size:13px; text-align:left;"></div>
+<button onclick="document.getElementById('boxHistorique').style.display='none'" class="btnRouge">FERMER</button>
+</div>
 <div style="display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap;">
   <button id="btnFiltre" onclick="filtrerRetard()" style="background:#dc3545; padding:10px 14px;">🔴 Voir Retardataires</button>
   <button id="btnDevise" onclick="basculerDevise()" style="background:#ff9800; padding:10px 14px;">💵 Afficher en CDF</button>
@@ -313,7 +321,81 @@ function voirRecu(btn){
   </div>`;
   document.getElementById("recuBox").style.display="block";
 }
-function exporterWord(){
+
+  function cloturerMois(){
+  calculer();
+  let rows=document.querySelectorAll("#table tr");
+  if(rows.length<=1){ alert("Tableau vide, rien à clôturer !"); return; }
+  let mois=prompt("Quel mois tu clôtures ? Ex: Novembre 2026", "Novembre 2026");
+  if(!mois) return;
+  if(!confirm("Tu es sûr de clôturer "+mois+" ? Le tableau va se vider mais l'historique sera gardé.")) return;
+  let clients=[];
+  for(let i=1;i<rows.length;i++){
+    let r=rows[i];
+    clients.push({
+      code:r.querySelector(".code").value,
+      nom:r.querySelector(".nom").value,
+      tel:r.querySelector(".tel").value,
+      montant:r.querySelector(".montant").value,
+      pourc:r.querySelector(".pourc").value,
+      paye:r.querySelector(".paye").value,
+      dateRemb:r.querySelector(".dateRemb").value,
+      statut:r.querySelector(".statut").value
+    });
+  }
+  let hist=JSON.parse(localStorage.getItem("historique_mois")||"[]");
+  hist.push({
+    mois:mois,
+    date:new Date().toLocaleDateString('fr-FR'),
+    totalPrete:document.getElementById("tPrete").innerText,
+    totalProfit:document.getElementById("tProfit").innerText,
+    totalReste:document.getElementById("tReste").innerText,
+    clients:clients
+  });
+  localStorage.setItem("historique_mois", JSON.stringify(hist));
+  for(let i=rows.length-1;i>=1;i--){ rows[i].remove(); }
+  calculer(); sauvegarderMaintenant();
+  alert("✅ Mois "+mois+" clôturé et gardé dans l'historique !");
+}
+function afficherHistorique(){
+  let hist=JSON.parse(localStorage.getItem("historique_mois")||"[]");
+  let box=document.getElementById("boxHistorique");
+  let liste=document.getElementById("listeHistorique");
+  if(hist.length==0){ liste.innerHTML="Aucun mois clôturé pour l'instant."; }
+  else{
+    let h="";
+    hist.forEach((m,idx)=>{
+      h+="<div style='border:1px solid #ddd; border-radius:8px; padding:8px; margin-bottom:8px;'><b>"+m.mois+"</b> - "+m.date+"<br>Prêté: "+m.totalPrete+" | Profit: "+m.totalProfit+" | Reste: "+m.totalReste+"<br>Clients: "+m.clients.length+"<br><button onclick='reprendreMois("+idx+")' class='btnVert' style='margin-top:5px'>↩️ Reprendre les clients</button> <button onclick='voirDetailMois("+idx+")' style='background:#0b2e59'>👁️ Voir détail</button></div>";
+    });
+    liste.innerHTML=h;
+  }
+  box.style.display="block";
+}
+function reprendreMois(idx){
+  let hist=JSON.parse(localStorage.getItem("historique_mois")||"[]");
+  let m=hist[idx];
+  if(!confirm("Reprendre les "+m.clients.length+" clients de "+m.mois+" ?")) return;
+  m.clients.forEach(c=>{
+    ajouter();
+    let rows=document.querySelectorAll("#table tr");
+    let r=rows[rows.length-1];
+    r.querySelector(".code").value=c.code;
+    r.querySelector(".nom").value=c.nom;
+    r.querySelector(".tel").value=c.tel;
+    r.querySelector(".pourc").value=c.pourc;
+    r.querySelector(".statut").value="Non payé";
+  });
+  calculer(); sauvegarderMaintenant();
+  alert("✅ Clients repris ! Mets juste les nouveaux montants.");
+}
+function voirDetailMois(idx){
+  let hist=JSON.parse(localStorage.getItem("historique_mois")||"[]");
+  let m=hist[idx];
+  let txt="📂 "+m.mois+" - "+m.date+"\n\n";
+  m.clients.forEach(c=>{ txt+=c.nom+" - Montant: $"+c.montant+" - Payé: $"+c.paye+" - "+c.statut+"\n"; });
+  alert(txt);
+}
+  function exporterWord(){
 let capital=document.getElementById("capital").value;
 let totPrete=document.getElementById("tPrete").innerText;
 let totProfit=document.getElementById("tProfit").innerText;
