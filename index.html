@@ -51,6 +51,11 @@ td:nth-child(5) input, td:nth-child(6) input, td:nth-child(13) input{min-width:1
 <div class="logo">TI</div>
 <div style="text-align:left"><h1>TABLEUR INFORMATIQUE</h1><p>Gestion des Crédits Clients - Lkasi - En Dollars $</p></div>
 </div>
+  <div style="text-align:center; margin:10px;">
+  <button id="btnVerrouiller" onclick="verrouillerPage()" style="background:#dc3545; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:bold;">🔒 Verrouiller</button>
+  <button id="btnDeverrouiller" onclick="deverrouillerPage()" style="background:#28a745; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:bold;">🔓 Déverrouiller</button>
+  <span id="etatPage" style="font-weight:bold; margin-left:10px; color:#dc3545;">🔒 VERROUILLÉE</span>
+</div>
 
 <div class="dashboard">
 <div class="card bleu"><b id="dClients">0</b><span>Clients Total</span></div>
@@ -586,6 +591,41 @@ function basculerDevise(){
     else { if(txt.includes('CDF') || txt.includes('FC')) td.innerText = Math.round(nombre / tauxCDF) + ' $'; }
   });
 }
+// --- VERROUILLAGE PAGE - Code secret : 2026 ---
+let CODE_SECRET = "2026";
+let pageVerrouillee = true;
+function appliquerVerrouillage(){
+  let etat = document.getElementById("etatPage");
+  document.querySelectorAll("input, select, textarea, button").forEach(function(el){
+    if(el.id === "btnVerrouiller" || el.id === "btnDeverrouiller") return;
+    el.disabled = pageVerrouillee;
+  });
+  if(etat){
+    if(pageVerrouillee){
+      etat.textContent = "🔒 VERROUILLÉE - Lecture seule";
+      etat.style.color = "#dc3545";
+    } else {
+      etat.textContent = "🔓 DÉVERROUILLÉE - Tu peux modifier";
+      etat.style.color = "#28a745";
+    }
+  }
+}
+function verrouillerPage(){
+  pageVerrouillee = true;
+  appliquerVerrouillage();
+  alert("Page verrouillée. Personne ne peut modifier.");
+}
+function deverrouillerPage(){
+  let code = prompt("Entre ton code secret pour déverrouiller :");
+  if(code === CODE_SECRET){
+    pageVerrouillee = false;
+    appliquerVerrouillage();
+    alert("Page déverrouillée. Tu peux modifier.");
+  } else {
+    alert("Code faux ! Accès refusé.");
+  }
+}
+window.addEventListener("load", function(){ appliquerVerrouillage(); });
 </script>
 <div id="ficheClient" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; justify-content:center; align-items:center;">
   <div style="background:white; width:92%; max-width:400px; border-radius:15px; padding:18px; text-align:center; position:relative;">
