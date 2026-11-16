@@ -630,6 +630,12 @@ function appliquerVerrouillage(){
   let etat = document.getElementById("etatPage");
   document.querySelectorAll("input, select, textarea, button").forEach(function(el){
     if(el.id === "btnVerrouiller" || el.id === "btnDeverrouiller") return;
+    if(el.closest("#recuBox")) return;
+    if(el.classList.contains("btnRecu")) return;
+    if(el.classList.contains("btnW")) return;
+    let txt = (el.innerText || "").toLowerCase();
+    if(txt.includes("reçu") || txt.includes("imprimer le reçu") || txt.includes("fermer")) return;
+    if(el.closest("#ficheClient") && txt === "x") return;
     el.disabled = pageVerrouillee;
   });
   if(etat){
