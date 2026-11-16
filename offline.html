@@ -274,25 +274,44 @@ let msg=`Bonjour ${nom}, c'est TABLEUR INFORMATIQUE. Rappel : il vous reste $ ${
 window.open("https://wa.me/"+telClean+"?text="+encodeURIComponent(msg), "_blank");
 }
 function voirRecu(btn){
-let r=btn.closest("tr");
-let nom=r.querySelector(".nom").value||"";
-let tel=r.querySelector(".tel").value||"";
-let montant=r.querySelector(".montant").value||"0";
-let profit=r.querySelector(".profit").innerText;
-let remb=r.querySelector(".remb").innerText;
-let paye=r.querySelector(".paye").value||"0";
-let reste=r.querySelector(".reste").innerText;
-let dateR=r.querySelector(".dateRemb").value||new Date().toLocaleDateString('fr-FR');
-let code=r.querySelector(".code").value||"";
-document.getElementById("recuContenu").innerHTML=`
-<div style="max-width:500px; margin:auto; border:2px solid #0b2e59; padding:20px; border-radius:10px; font-family:Arial">
-<div style="text-align:center"><div style="width:60px;height:60px;background:#ff7a00;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:26px;font-weight:bold">TI</div><h2 style="margin:5px; color:#0b2e59">TABLEUR INFORMATIQUE</h2><p>Lubumbashi - Reçu de Paiement</p><hr></div>
-<p><b>Reçu N° :</b> ${code} | <b>Date :</b> ${dateR}</p>
-<p><b>Client :</b> ${nom}<br><b>Téléphone :</b> ${tel}</p>
-<table style="width:100%; border-collapse:collapse"><tr><td style="border:1px solid #ccc; padding:8px">Montant Crédité</td><td style="border:1px solid #ccc; padding:8px">$ ${montant}</td></tr><tr><td style="border:1px solid #ccc; padding:8px">Profit</td><td style="border:1px solid #ccc; padding:8px">$ ${profit}</td></tr><tr><td style="border:1px solid #ccc; padding:8px">Total à Rembourser</td><td style="border:1px solid #ccc; padding:8px"><b>$ ${remb}</b></td></tr><tr><td style="border:1px solid #ccc; padding:8px">Montant Payé</td><td style="border:1px solid #ccc; padding:8px">$ ${paye}</td></tr><tr><td style="border:1px solid #ccc; padding:8px">Reste à Payer</td><td style="border:1px solid #ccc; padding:8px"><b>$ ${reste}</b></td></tr></table>
-<br><br><p>Signature Client : ________________ &nbsp;&nbsp; Signature TABLEUR : ________________</p><p style="text-align:center; font-size:12px">Merci pour votre confiance !</p>
-</div>`;
-document.getElementById("recuBox").style.display="block";
+  calculer();
+  let r=btn.closest("tr");
+  let nom=r.querySelector(".nom").value||"-";
+  let tel=r.querySelector(".tel").value||"-";
+  let montant=Number(r.querySelector(".montant").value||0);
+  let pourc=Number(r.querySelector(".pourc").value||30);
+  let paye=Number(r.querySelector(".paye").value||0);
+  let profit=Math.round(montant*pourc/100);
+  let remb=montant+profit;
+  let reste=remb-paye;
+  let dateR=r.querySelector(".dateRemb").value||new Date().toLocaleDateString('fr-FR');
+  let code=r.querySelector(".code").value||"-";
+  document.getElementById("recuContenu").innerHTML=`
+  <div class="recu-card">
+    <div style="text-align:center">
+      <div style="width:58px;height:58px;background:#ff7a00;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:bold">TI</div>
+      <h2 style="margin:6px 0 2px; color:#0b2e59; font-size:20px;">TABLEUR INFORMATIQUE</h2>
+      <p style="margin:0; color:#555; font-size:13px;">Lubumbashi - Reçu de Paiement</p>
+      <hr style="margin:12px 0;">
+    </div>
+    <div class="recu-ligne"><span>Reçu N°</span><b>${code}</b></div>
+    <div class="recu-ligne"><span>Date</span><b>${dateR}</b></div>
+    <div class="recu-ligne"><span>Client</span><b>${nom}</b></div>
+    <div class="recu-ligne"><span>Téléphone</span><b>${tel}</b></div>
+    <div style="height:8px"></div>
+    <div class="recu-ligne"><span>Montant Crédité</span><b>$ ${montant}</b></div>
+    <div class="recu-ligne"><span>Profit (${pourc}%)</span><b>$ ${profit}</b></div>
+    <div class="recu-ligne recu-total"><span>Total à Rembourser</span><b>$ ${remb}</b></div>
+    <div class="recu-ligne"><span>Montant Payé</span><b>$ ${paye}</b></div>
+    <div class="recu-ligne recu-reste"><span>Reste à Payer</span><b>$ ${reste}</b></div>
+    <br>
+    <div style="display:flex; justify-content:space-between; font-size:13px; margin-top:18px;">
+      <span>Signature Client<br><br>________________</span>
+      <span style="text-align:right">Signature TABLEUR<br><br>________________</span>
+    </div>
+    <p style="text-align:center; font-size:12px; color:#666; margin-top:16px;">Merci pour votre confiance !</p>
+  </div>`;
+  document.getElementById("recuBox").style.display="block";
 }
 function exporterWord(){
 let capital=document.getElementById("capital").value;
