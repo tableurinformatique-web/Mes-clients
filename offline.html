@@ -108,7 +108,13 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 🔍 Recherche : <input id="recherche" placeholder="Nom, Code ou Téléphone..." oninput="filtrer()" style="width:80%"><br><br>
 <button onclick="ajouter()">+ Ajouter client</button>
   <br>
-<button onclick="cloturerMois()" style="background:#6f42c1">📦 CLÔTURER LE MOIS</button>
+<select id="selMois" style="padding:8px; border-radius:8px; font-weight:bold;">
+<option>Janvier</option><option>Février</option><option>Mars</option><option>Avril</option><option>Mai</option><option>Juin</option><option>Juillet</option><option>Août</option><option>Septembre</option><option>Octobre</option><option>Novembre</option><option>Décembre</option>
+</select>
+<select id="selAnnee" style="padding:8px; border-radius:8px; font-weight:bold;">
+<option>2025</option><option selected>2026</option><option>2027</option><option>2028</option>
+</select>
+  <button onclick="cloturerMois()" style="background:#6f42c1">📦 CLÔTURER LE MOIS</button>
 <button onclick="afficherHistorique()" style="background:#ff9800">📂 VOIR HISTORIQUE</button><br>
 <button onclick="calculer()" class="btnVert">CALCULER + SAUVEGARDER</button><br>
 <button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER / PDF</button>
@@ -119,10 +125,13 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 </label>
 </div>
 <div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
-  <div id="boxHistorique" style="display:none; background:white; padding:12px; border-radius:10px; margin:10px 0; box-shadow:0 2px 5px rgba(0,0,0,.1)">
-<b>📂 HISTORIQUE DES MOIS</b>
-<div id="listeHistorique" style="margin-top:8px; font-size:13px; text-align:left;"></div>
-<button onclick="document.getElementById('boxHistorique').style.display='none'" class="btnRouge">FERMER</button>
+<div id="boxHistorique" style="display:none; background:white; padding:12px; border-radius:10px; margin-top:10px;">
+<b>📂 HISTORIQUE DES MOIS</b><br><br>
+<select id="selHistorique" onchange="voirMoisChoisi()" style="width:100%; padding:10px; border-radius:8px; font-weight:bold; margin-bottom:10px;">
+<option value="">-- Choisir un mois --</option>
+</select>
+<div id="listeHistorique"></div>
+<button onclick="document.getElementById('boxHistorique').style.display='none'" style="background:#888;">FERMER</button>
 </div>
 <div style="display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap;">
   <button id="btnFiltre" onclick="filtrerRetard()" style="background:#dc3545; padding:10px 14px;">🔴 Voir Retardataires</button>
@@ -326,8 +335,7 @@ function voirRecu(btn){
   calculer();
   let rows=document.querySelectorAll("#table tr");
   if(rows.length<=1){ alert("Tableau vide, rien à clôturer !"); return; }
-  let mois=prompt("Quel mois tu clôtures ? Ex: Novembre 2026", "Novembre 2026");
-  if(!mois) return;
+    let mois=document.getElementById("selMois").value+" "+document.getElementById("selAnnee").value;
   if(!confirm("Tu es sûr de clôturer "+mois+" ? Le tableau va se vider mais l'historique sera gardé.")) return;
   let clients=[];
   for(let i=1;i<rows.length;i++){
@@ -360,16 +368,22 @@ function voirRecu(btn){
 function afficherHistorique(){
   let hist=JSON.parse(localStorage.getItem("historique_mois")||"[]");
   let box=document.getElementById("boxHistorique");
+  let sel=document.getElementById("selHistorique");
   let liste=document.getElementById("listeHistorique");
-  if(hist.length==0){ liste.innerHTML="Aucun mois clôturé pour l'instant."; }
-  else{
-    let h="";
-    hist.forEach((m,idx)=>{
-      h+="<div style='border:1px solid #ddd; border-radius:8px; padding:8px; margin-bottom:8px;'><b>"+m.mois+"</b> - "+m.date+"<br>Prêté: "+m.totalPrete+" | Profit: "+m.totalProfit+" | Reste: "+m.totalReste+"<br>Clients: "+m.clients.length+"<br><button onclick='reprendreMois("+idx+")' class='btnVert' style='margin-top:5px'>↩️ Reprendre les clients</button> <button onclick='voirDetailMois("+idx+")' style='background:#0b2e59'>👁️ Voir détail</button></div>";
-    });
-    liste.innerHTML=h;
-  }
+  sel.innerHTML="<option value=''>-- Choisir un mois --</option>";
+  hist.forEach((m,idx)=>{
+    sel.innerHTML+="<option value='"+idx+"'>"+m.mois+" ("+m.clients.length+" clients)</option>";
+  });
+  liste.innerHTML = hist.length==0 ? "Aucun mois clôturé pour l'instant." : "Choisis un mois dans la liste ci-dessus 👆";
   box.style.display="block";
+}
+function voirMoisChoisi(){
+  let idx=document.getElementById("selHistorique").value;
+  if(idx==="") return;
+  let hist=JSON.parse(localStorage.getItem("historique_mois")||"[]");
+  let m=hist[idx];
+  let h="<div style='border:1px solid #ddd; border-radius:8px; padding:8px;'><b>"+m.mois+"</b> - "+m.date+"<br>Prêté: "+m.totalPrete+" | Profit: "+m.totalProfit+" | Reste: "+m.totalReste+"<br>Clients: "+m.clients.length+"<br><button onclick='reprendreMois("+idx+")' class='btnVert' style='margin-top:5px'>↩️ Reprendre les clients</button> <button onclick='voirDetailMois("+idx+")' style='background:#0b2e59'>👁️ Voir détail</button></div>";
+  document.getElementById("listeHistorique").innerHTML=h;
 }
 function reprendreMois(idx){
   let hist=JSON.parse(localStorage.getItem("historique_mois")||"[]");
