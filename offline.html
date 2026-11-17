@@ -84,7 +84,11 @@ td input, td select{min-width:0 !important; width:100% !important;}
 <div class="card bleu"><b id="tRemb">$ 0</b><span>Total Rembourse</span></div>
 <div class="card vert"><b id="tCapital">$ 0</b><span>Capital Actuel</span></div>
 </div>
-
+<div class="box">
+<b>⚙️ RÉGLAGES</b><br><br>
+Taux 1$ = <input id="taux" type="number" value="2800" style="width:100px" oninput="changerTaux()"> Fc<br>
+<label style="font-size:13px"><input type="checkbox" id="afficherFranc" onchange="calculer()"> Afficher en Franc (utilise le Taux)</label>
+</div>
 <div class="box">
 Capital de départ : <input id="capital" type="number" value="1000" style="width:100px" oninput="calculer()"> $<br>
 Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px" oninput="changerPourc()"> %<br>
@@ -139,8 +143,8 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 </div>
 <div style="display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap;">
   <button id="btnFiltre" onclick="filtrerRetard()" style="background:#dc3545; padding:10px 14px;">🔴 Voir Retardataires</button>
-  <button id="btnDevise" onclick="basculerDevise()" style="background:#ff9800; padding:10px 14px;">💵 Afficher en CDF</button>
-<div id="infoFiltre" style="text-align:center; font-size:13px; color:#555; margin-bottom:5px;"></div>
+<button onclick="document.getElementById('afficherFranc').checked=false; calculer()" style="background:#28a745; padding:10px 14px; color:white; font-weight:bold; border-radius:8px;">💵 Dollars</button>
+<button onclick="document.getElementById('afficherFranc').checked=true; calculer()" style="background:#ff9800; padding:10px 14px; color:white; font-weight:bold; border-radius:8px;">🇨🇩 Francs</button>
 <div id="wrapTable">
 <table id="table">
 <tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant $</th><th>Date crédit</th><th>Date Limite</th><th>Alerte</th><th>%</th><th>Profit $</th><th>Rembourse $</th><th>Payé $</th><th>Reste $</th><th>Date Remb.</th><th>Statut</th><th>Évolution</th><th class="no-print">WhatsApp</th><th class="no-print">Reçu</th><th class="no-print">X</th></tr>
@@ -227,6 +231,9 @@ function colorEvol(sel){ sel.classList.remove("bon","moyen","mauvais"); if(sel.v
 function ajouter(){ creerLigne({}); calculer(); sauvegarderMaintenant(); }
 function supprimer(btn){ if(confirm("Supprimer ce client ?")){ btn.closest("tr").remove(); calculer(); sauvegarderMaintenant(); } }
 function calculer(){
+let taux=Number(document.getElementById('taux').value||2800);
+let enFranc=document.getElementById('afficherFranc') && document.getElementById('afficherFranc').checked;
+let fmt=v=> enFranc ? 'Fc '+Math.round(v*taux).toLocaleString('fr-FR') : '$ '+v;
 let rows=document.querySelectorAll("#table tr");
 let totPrete=0, totProfit=0, totRemb=0, totPaye=0, totReste=0;
 let nbPaye=0, nbNon=0, nbRetard=0;
@@ -239,9 +246,9 @@ let paye=Number(r.querySelector(".paye").value||0);
 let profit=Math.round(montant*pourc/100);
 let remb=montant+profit;
 let reste=remb-paye;
-r.querySelector(".profit").innerText=profit;
-r.querySelector(".remb").innerText=remb;
-r.querySelector(".reste").innerText=reste;
+r.querySelector(".profit").innerText=fmt(profit);
+r.querySelector(".remb").innerText=fmt(remb);
+r.querySelector(".reste").innerText=fmt(reste);
 r.querySelector(".reste").style.color=reste<=0?"green":"red";
 let statut=r.querySelector(".statut").value;
 if(statut=="Payé") nbPaye++; else nbNon++;
@@ -259,18 +266,18 @@ document.getElementById("dClients").innerText=rows.length-1;
 document.getElementById("dPaye").innerText=nbPaye;
 document.getElementById("dNonPaye").innerText=nbNon;
 document.getElementById("dRetard").innerText=nbRetard;
-document.getElementById("tPrete").innerText="$ "+totPrete;
-document.getElementById("tProfit").innerText="$ "+totProfit;
-document.getElementById("tRemb").innerText="$ "+totRemb;
-document.getElementById("tReste").innerText="$ "+totReste;
-document.getElementById("tCapital").innerText="$ "+(capital+totProfit);
-document.getElementById("ftPrete").innerText=totPrete;
-document.getElementById("ftProfit").innerText=totProfit;
-document.getElementById("ftRemb").innerText=totRemb;
-document.getElementById("ftPaye").innerText=totPaye;
-document.getElementById("ftReste").innerText=totReste;
+document.getElementById("tPrete").innerText=fmt(totPrete);
+document.getElementById("tProfit").innerText=fmt(totProfit);
+document.getElementById("tRemb").innerText=fmt(totRemb);
+document.getElementById("tReste").innerText=fmt(totReste);
+document.getElementById("tCapital").innerText=fmt(capital+totProfit);
+document.getElementById("fPrete").innerText=fmt(capital-totPrete);
+document.getElementById("ffProfit").innerText=fmt(totProfit);
+document.getElementById("ffRemb").innerText=fmt(totRemb);
+document.getElementById("ffPaye").innerText=fmt(totPaye);
+document.getElementById("ffReste").innerText=fmt(totReste);
 let ev=document.getElementById("evolCapital");
-ev.innerText=totProfit>0?"📈 CAPITAL AGRANDIT + $"+totProfit:"➖ CAPITAL STABLE";
+ev.innerText=totProfit>0?"🚀 CAPITAL AGRANDIT + "+fmt(totProfit):"— CAPITAL STABLE";
 dessinerGraph(totPrete, totProfit, totReste);
 sauvegardeDifferee();
 }
