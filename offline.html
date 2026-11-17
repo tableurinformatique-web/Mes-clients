@@ -788,23 +788,36 @@ window.addEventListener("load", function(){ appliquerVerrouillage(); });
 <h3>⚙️ Réglages</h3>
 <label>Nom entreprise :</label><br>
 <input id="nomEnt" style="width:100%;padding:10px;" placeholder="Ex: Président Shop"><br><br>
-<label>Devise :</label><br>
+<label>Devise principale :</label><br>
 <select id="devise" style="width:100%;padding:10px;">
 <option value="CDF">Francs - CDF</option>
 <option value="USD">Dollars - USD</option>
 </select><br><br>
+<label>Taux 1$ = ? CDF :</label><br>
+<input id="tauxCDF" type="number" value="2850" style="width:100%;padding:10px;"><br><br>
+<div style="display:flex;gap:8px;">
+<button onclick="choisirDevise('CDF')" style="flex:1;background:#ff9800;padding:12px;color:white;border:none;border-radius:8px;">Interface Francs</button>
+<button onclick="choisirDevise('USD')" style="flex:1;background:#007bff;padding:12px;color:white;border:none;border-radius:8px;">Interface Dollars</button>
+</div><br>
 <button onclick="sauverReglages()" style="width:100%;padding:12px;background:green;color:white;border:none;border-radius:8px;">Enregistrer</button>
 </div>
 <script>
+function choisirDevise(d){
+localStorage.setItem('devise', d);
+document.getElementById('devise').value=d;
+alert('Interface '+d+' activée');
+location.reload();
+}
 function sauverReglages(){
 localStorage.setItem('nomEnt', document.getElementById('nomEnt').value);
 localStorage.setItem('devise', document.getElementById('devise').value);
+localStorage.setItem('tauxCDF', document.getElementById('tauxCDF').value);
 alert('Réglages enregistrés !');
 location.reload();
 }
 document.getElementById('nomEnt').value = localStorage.getItem('nomEnt')||'';
 document.getElementById('devise').value = localStorage.getItem('devise')||'CDF';
+document.getElementById('tauxCDF').value = localStorage.getItem('tauxCDF')||'2850';
 </script>
-  </script>
 </body>
 </html>
