@@ -706,12 +706,10 @@ function basculerDevise(){
   let btn = document.getElementById('btnDevise');
   if(deviseActuelle == '$'){
     deviseActuelle = 'CDF';
-    btn.innerText = 'Afficher en $';
-    btn.style.background = '#007bff';
+    if(btn){ btn.innerText = 'Afficher en $'; btn.style.background = '#007bff'; }
   } else {
     deviseActuelle = '$';
-    btn.innerText = 'Afficher en CDF';
-    btn.style.background = '#ff9800';
+    if(btn){ btn.innerText = 'Afficher en CDF'; btn.style.background = '#ff9800'; }
   }
   chargerSauvegarde();
 }
