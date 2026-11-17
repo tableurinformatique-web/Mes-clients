@@ -168,6 +168,7 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 
 <script>
 let timerSauvegarde=null;
+  let deviseActuelle='dollar'; // 'dollar' ou 'franc'
 function sauvegarderMaintenant(){
   try{
     let rows=document.querySelectorAll("#table tr");
@@ -188,9 +189,9 @@ function sauvegarderMaintenant(){
         evol:r.querySelector(".evol").value
       });
     }
-    localStorage.setItem("clients_pro",JSON.stringify(data));
-    localStorage.setItem("capital_pro",document.getElementById("capital").value);
-    localStorage.setItem("pourc_pro",document.getElementById("pourcGlobal").value);
+    localStorage.setItem("clients_"+deviseActuelle,JSON.stringify(data));
+localStorage.setItem("capital_"+deviseActuelle,document.getElementById("capital").value);
+localStorage.setItem("pourc_"+deviseActuelle,document.getElementById("pourcGlobal").value);
     let info=document.getElementById("sauvegardeInfo");
     if(info){ info.innerText="💾 Sauvegardé à "+new Date().toLocaleTimeString('fr-FR'); }
   }catch(e){ console.log("Erreur sauvegarde:",e); }
@@ -231,10 +232,7 @@ function colorEvol(sel){ sel.classList.remove("bon","moyen","mauvais"); if(sel.v
 function ajouter(){ creerLigne({}); calculer(); sauvegarderMaintenant(); }
 function supprimer(btn){ if(confirm("Supprimer ce client ?")){ btn.closest("tr").remove(); calculer(); sauvegarderMaintenant(); } }
 function calculer(){
-let taux=Number(document.getElementById('taux').value||2800);
-let enFranc=document.getElementById('afficherFranc') && document.getElementById('afficherFranc').checked;
-let fmt=v=> enFranc ? 'Fc '+Math.round(v*taux).toLocaleString('fr-FR') : '$ '+v;
-let rows=document.querySelectorAll("#table tr");
+let fmt=v=> deviseActuelle==='franc' ? 'Fc '+Number(v||0).toLocaleString('fr-FR') : '$ '+v;
 let totPrete=0, totProfit=0, totRemb=0, totPaye=0, totReste=0;
 let nbPaye=0, nbNon=0, nbRetard=0;
 let aujourd=new Date(); aujourd.setHours(0,0,0,0);
@@ -539,9 +537,9 @@ function chargerSauvegarde(event){
   lecteur.readAsText(fichier);
 }
 window.onload=function(){
-let cap=localStorage.getItem("capital_pro"); if(cap) document.getElementById("capital").value=cap;
-let pf=localStorage.getItem("pourc_pro"); if(pf) document.getElementById("pourcGlobal").value=pf;
-let sauve=localStorage.getItem("clients_pro");
+let cap=localStorage.getItem("capital"); if(cap) document.getElementById("capital").value=cap;
+let pf=localStorage.getItem("pourc"); if(pf) document.getElementById("pourcGlobal").value=pf;
+let sauve=localStorage.getItem("clients");
 if(sauve && JSON.parse(sauve).length>0){ JSON.parse(sauve).forEach(c=>creerLigne(c)); } else { creerLigne({}); }
 calculer();
 sauvegarderMaintenant();
@@ -704,32 +702,18 @@ function filtrerRetard(){
   else { btn.innerText='🔴 Voir Retardataires'; btn.style.background='#dc3545'; info.innerText=''; }
 }
 function basculerDevise(){
+  sauvegarderMaintenant();
   let btn = document.getElementById('btnDevise');
-  if(deviseActuelle === '$'){ deviseActuelle = 'CDF'; btn.innerText = '💲 Afficher en Dollar'; btn.style.background = '#007bff'; }
-  else { deviseActuelle = '$'; btn.innerText = '💵 Afficher en CDF'; btn.style.background = '#ff9800'; }
-  document.querySelectorAll('#table input').forEach(inp=>{
-    let v = parseFloat(String(inp.value).replace(/[^0-9.-]/g,''));
-    if(isNaN(v) || v===0) return;
-    let td = inp.closest('td');
-    if(!td) return;
-    let tr = td.closest('tr');
-    let ths = document.querySelectorAll('#table tr:first-child th');
-    let idx = Array.from(tr.children).indexOf(td);
-    let titre = ths[idx] ? ths[idx].innerText.toLowerCase() : '';
-    if(titre.includes('montant') || titre.includes('reste') || titre.includes('profit') || titre.includes('payer') || titre.includes('rembours')){
-      if(deviseActuelle === 'CDF'){ inp.value = Math.round(v * tauxCDF); }
-      else { inp.value = Math.round(v / tauxCDF); }
-    }
-  });
-  document.querySelectorAll('#table td, #table th').forEach(td=>{
-    if(td.querySelector('input')) return;
-    let txt = td.innerText;
-    if(!txt.includes('$') && !txt.includes('CDF') && !txt.includes('FC')) return;
-    let nombre = parseFloat(txt.replace(/[^0-9.-]/g,''));
-    if(isNaN(nombre)) return;
-    if(deviseActuelle === 'CDF'){ if(txt.includes('$')) td.innerText = (nombre * tauxCDF).toLocaleString('fr-FR') + ' CDF'; }
-    else { if(txt.includes('CDF') || txt.includes('FC')) td.innerText = Math.round(nombre / tauxCDF) + ' $'; }
-  });
+  if(deviseActuelle == '$'){
+    deviseActuelle = 'CDF';
+    btn.innerText = 'Afficher en $';
+    btn.style.background = '#007bff';
+  } else {
+    deviseActuelle = '$';
+    btn.innerText = 'Afficher en CDF';
+    btn.style.background = '#ff9800';
+  }
+  chargerSauvegarde();
 }
 // --- VERROUILLAGE PAGE - Code secret : 2026 ---
 let CODE_SECRET = "2026";
