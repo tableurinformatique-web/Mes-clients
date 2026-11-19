@@ -14,13 +14,13 @@
 #table th, #table td{padding:10px 8px !important; white-space:nowrap !important; text-align:left; vertical-align:middle;}
 #table th:first-child, #table td:first-child{position:sticky; left:0; background:#fff; z-index:2; font-weight:bold; text-align:left;}
 #table input, #table select{font-size:14px !important; padding:6px 4px !important; min-width:65px !important; width:65px !important; box-sizing:border-box !important;}
-  #table td:nth-child(1) input{width:75px !important; min-width:75px !important;}
+#table td:nth-child(1) input{width:75px !important; min-width:75px !important;}
 #table td:nth-child(2) input{width:165px !important; min-width:165px !important;}
 #table td:nth-child(3) input{width:135px !important; min-width:135px !important;}
 #table th:nth-child(1){min-width:75px !important;}
 #table td:nth-child(2){white-space:normal !important; word-break:normal !important; min-width:170px !important; max-width:220px; line-height:1.3;}
 #table td:nth-child(3){min-width:130px; text-align:left;}
-  #table th:first-child{background:#0b2e59 !important; color:#fff !important;}
+#table th:first-child{background:#0b2e59 !important; color:#fff !important;}
 #table th:nth-child(1)::before{content:"Code"; color:#fff !important;}
 #table input[type="date"]{width:135px !important; min-width:135px !important;}
 /* --- RECU PROPRE V3 --- */
@@ -54,7 +54,6 @@ th{background:#0b2e59; color:white}
 .badgeRetard{background:#dc3545; color:white; padding:3px 6px; border-radius:10px; font-size:11px; font-weight:bold}
 .badgeOK{background:#28a745; color:white; padding:3px 6px; border-radius:10px; font-size:11px}
 canvas{max-width:100%; background:white; border-radius:10px}
-#recuBox{display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:999; padding:20px; overflow:auto}
 #sauvegardeInfo{font-size:11px; color:#666; text-align:center; margin:4px 0}
 @media print{ .no-print{display:none !important} body{background:white} }
 table{min-width:0 !important; width:100% !important;}
@@ -67,7 +66,8 @@ td input, td select{min-width:0 !important; width:100% !important;}
 <div class="logo">TI</div>
 <div style="text-align:left"><h1>TABLEUR INFORMATIQUE</h1><p>Gestion des Crédits Clients - Likasi - En Dollars $</p></div>
 </div>
-  <div style="text-align:center; margin:10px;">
+
+<div style="text-align:center; margin:10px;">
   <button id="btnVerrouiller" onclick="verrouillerPage()" style="background:#dc3545; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:bold;">🔒 Verrouiller</button>
   <button id="btnDeverrouiller" onclick="deverrouillerPage()" style="background:#28a745; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:bold;">🔓 Déverrouiller</button>
   <span id="etatPage" style="font-weight:bold; margin-left:10px; color:#dc3545;">🔒 VERROUILLÉE</span>
@@ -84,11 +84,13 @@ td input, td select{min-width:0 !important; width:100% !important;}
 <div class="card bleu"><b id="tRemb">$ 0</b><span>Total Rembourse</span></div>
 <div class="card vert"><b id="tCapital">$ 0</b><span>Capital Actuel</span></div>
 </div>
+
 <div class="box">
 <b>⚙️ RÉGLAGES</b><br><br>
 Taux 1$ = <input id="taux" type="number" value="2800" style="width:100px" oninput="changerTaux()"> Fc<br>
 <label style="font-size:13px"><input type="checkbox" id="afficherFranc" onchange="calculer()"> Afficher en Franc (utilise le Taux)</label>
 </div>
+
 <div class="box">
 Capital de départ : <input id="capital" type="number" value="1000" style="width:100px" oninput="calculer()"> $<br>
 Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px" oninput="changerPourc()"> %<br>
@@ -100,6 +102,7 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <canvas id="graph" width="340" height="140"></canvas><br>
 <span style="font-size:12px"><span style="color:#007bff">■ Prêté</span> <span style="color:#28a745">■ Profit</span> <span style="color:#dc3545">■ À Récupérer</span></span>
 </div>
+
 <div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">
   <div id="boxRetard" style="flex:1; min-width:250px; background:#ffe5e5; border:2px solid red; border-radius:10px; padding:12px; text-align:center;">
     <div style="font-weight:bold; color:red; font-size:16px;">🔴 CLIENTS EN RETARD</div>
@@ -115,14 +118,13 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 
 <div class="box no-print">
 🔍 Recherche : <input id="recherche" placeholder="Nom, Code ou Téléphone..." oninput="filtrer()" style="width:80%"><br><br>
-  <br>
 <select id="selMois" style="padding:8px; border-radius:8px; font-weight:bold;">
 <option>Janvier</option><option>Février</option><option>Mars</option><option>Avril</option><option>Mai</option><option>Juin</option><option>Juillet</option><option>Août</option><option>Septembre</option><option>Octobre</option><option>Novembre</option><option>Décembre</option>
 </select>
 <select id="selAnnee" style="padding:8px; border-radius:8px; font-weight:bold;">
 <option>2025</option><option selected>2026</option><option>2027</option><option>2028</option>
 </select>
-  <button onclick="cloturerMois()" style="background:#6f42c1">📦 CLÔTURER LE MOIS</button>
+<button onclick="cloturerMois()" style="background:#6f42c1">📦 CLÔTURER LE MOIS</button>
 <button onclick="afficherHistorique()" style="background:#ff9800">📂 VOIR HISTORIQUE</button><br>
 <button onclick="calculer()" class="btnVert">CALCULER + SAUVEGARDER</button><br>
 <button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER / PDF</button>
@@ -132,7 +134,187 @@ Pourcentage : <input id="pourcGlobal" type="number" value="30" style="width:60px
 <input type="file" id="fichierSauvegarde" accept=".json,application/json" onchange="chargerSauvegarde(event)" style="display:none;">
 </label>
 </div>
+
 <div id="sauvegardeInfo">💾 Sauvegarde automatique activée</div>
+
+<div id="boxHistorique" style="display:none; background:white; padding:12px; border-radius:10px; margin-top:10px;">
+<b>📂 HISTORIQUE DES MOIS</b><br><br>
+<select id="selHistorique" onchange="voirMoisChoisi()" style="width:100%; padding:10px; border-radius:8px; font-weight:bold; margin-bottom:10px;">
+<option value="">-- Choisir un mois --</option>
+</select>
+<div id="listeHistorique"></div>
+<button onclick="document.getElementById('boxHistorique').style.display='none'" style="background:#888;">FERMER</button>
+</div>
+
+<div style="display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap;">
+  <button id="btnFiltre" onclick="filtrerRetard()" style="background:#dc3545; padding:10px 14px;">🔴 Voir Retardataires</button>
+  <button onclick="document.getElementById('afficherFranc').checked=false; calculer()" style="background:#28a745; padding:10px 14px; color:white; font-weight:bold; border-radius:8px;">💵 Dollars</button>
+  <button onclick="document.getElementById('afficherFranc').checked=true; calculer()" style="background:#ff9800; padding:10px 14px; color:white; font-weight:bold; border-radius:8px;">🇨🇩 Francs</button>
+</div>
+
+<div id="wrapTable">
+<table id="table">
+<tr><th>Code</th><th>Nom</th><th>Téléphone</th><th>Montant $</th><th>Date crédit</th><th>Date Limite</th><th>Alerte</th><th>%</th><th>Profit $</th><th>Rembourse $</th><th>Payé $</th><th>Reste $</th><th>Date Remb.</th><th>Statut</th><th>Évolution</th><th class="no-print">WhatsApp</th><th class="no-print">Reçu</th><th class="no-print">X</th></tr>
+</table>
+</div>
+
+<table style="margin-top:0"><tr class="total"><td>TOTAL $</td><td id="ftPrete">0</td><td id="ftProfit">0</td><td id="ftRemb">0</td><td id="ftPaye">0</td><td id="ftReste">0</td></tr></table>
+
+<div style="text-align:center; margin:10px;">
+<button onclick="ajouter()" style="background:#007bff; padding:10px 20px;">+ Ajouter client</button>
+</div>
+
+<p style="text-align:center; font-size:12px; color:#666">© TABLEUR INFORMATIQUE - Tout en Dollars $</p>
+
+<div id="recuBox">
+<div id="recuContenu"></div>
+<div class="no-print" style="text-align:center; margin-top:15px">
+<button onclick="window.print()" class="btnNoir">🖨️ IMPRIMER LE REÇU</button>
+<button onclick="document.getElementById('recuBox').style.display='none'" class="btnRouge">FERMER</button>
+</div>
+</div>
+
+<script>
+let timerSauvegarde=null;
+let deviseActuelle='dollar';
+let pageVerrouillee=false;
+
+/* ===== VERROUILLAGE ===== */
+function verrouillerPage(){
+  pageVerrouillee=true;
+  document.getElementById("etatPage").innerText="🔒 VERROUILLÉE";
+  document.getElementById("etatPage").style.color="#dc3545";
+  document.querySelectorAll("#table input, #table select, #table button").forEach(el=>el.disabled=true);
+}
+function deverrouillerPage(){
+  pageVerrouillee=false;
+  document.getElementById("etatPage").innerText="🔓 DÉVERROUILLÉE";
+  document.getElementById("etatPage").style.color="#28a745";
+  document.querySelectorAll("#table input, #table select, #table button").forEach(el=>el.disabled=false);
+}
+
+/* ===== SAUVEGARDE ===== */
+function sauvegarderMaintenant(){
+  try{
+    let rows=document.querySelectorAll("#table tr");
+    let data=[];
+    for(let i=1;i<rows.length;i++){
+      let r=rows[i];
+      data.push({
+        code:r.querySelector(".code").value,
+        nom:r.querySelector(".nom").value,
+        tel:r.querySelector(".tel").value,
+        montant:r.querySelector(".montant").value,
+        date:r.querySelector(".date").value,
+        dateLimite:r.querySelector(".dateLimite").value,
+        pourc:r.querySelector(".pourc").value,
+        paye:r.querySelector(".paye").value,
+        dateRemb:r.querySelector(".dateRemb").value,
+        statut:r.querySelector(".statut").value,
+        evol:r.querySelector(".evol").value
+      });
+    }
+    localStorage.setItem("clients_"+deviseActuelle,JSON.stringify(data));
+    localStorage.setItem("capital_"+deviseActuelle,document.getElementById("capital").value);
+    localStorage.setItem("pourc_"+deviseActuelle,document.getElementById("pourcGlobal").value);
+    let info=document.getElementById("sauvegardeInfo");
+    if(info){ info.innerText="💾 Sauvegardé à "+new Date().toLocaleTimeString('fr-FR'); }
+  }catch(e){ console.log("Erreur sauvegarde:",e); }
+}
+function sauvegardeDifferee(){
+  clearTimeout(timerSauvegarde);
+  timerSauvegarde=setTimeout(sauvegarderMaintenant, 300);
+}
+
+/* ===== CREATION LIGNE ===== */
+function creerLigne(c={}){
+let tr=document.createElement("tr");
+let pourc=c.pourc!==undefined?c.pourc:(document.getElementById("pourcGlobal").value||30);
+tr.innerHTML=`
+<td><input class="code" value="${c.code||''}" placeholder="C001" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="nom" value="${c.nom||''}" placeholder="Nom" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="tel" value="${c.tel||''}" placeholder="097..." oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="montant" type="number" value="${c.montant||''}" placeholder="0" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="date" type="date" value="${c.date||''}" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><input class="dateLimite" type="date" value="${c.dateLimite||''}" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td class="alerte">-</td>
+<td><input class="pourc" type="number" value="${pourc}" oninput="calculer()" onchange="sauvegarderMaintenant()" style="width:50px">%</td>
+<td class="profit">0</td>
+<td class="remb">0</td>
+<td><input class="paye" type="number" value="${c.paye||0}" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td class="reste">0</td>
+<td><input class="dateRemb" type="date" value="${c.dateRemb||''}" oninput="calculer()" onchange="sauvegarderMaintenant()"></td>
+<td><select class="statut" onchange="calculer();sauvegarderMaintenant()"><option>Non payé</option><option>Payé partiel</option><option>Payé</option></select></td>
+<td><select class="evol" onchange="colorEvol(this);calculer();sauvegarderMaintenant()"><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></td>
+<td class="no-print"><button class="btnW" onclick="whatsapp(this)">💬 WhatsApp</button></td>
+<td class="no-print"><button class="btnRecu" onclick="voirRecu(this)">🧾 Reçu</button></td>
+<td class="no-print"><button class="btnRouge" onclick="supprimer(this)">X</button></td>`;
+document.getElementById("table").appendChild(tr);
+if(c.statut) tr.querySelector(".statut").value=c.statut;
+if(c.evol) tr.querySelector(".evol").value=c.evol;
+colorEvol(tr.querySelector(".evol"));
+}
+function changerPourc(){ let v=document.getElementById("pourcGlobal").value||30; document.querySelectorAll(".pourc").forEach(i=>i.value=v); calculer(); sauvegarderMaintenant(); }
+function changerTaux(){ calculer(); }
+function colorEvol(sel){ sel.classList.remove("bon","moyen","mauvais"); if(sel.value=="Bon") sel.classList.add("bon"); if(sel.value=="Moyen") sel.classList.add("moyen"); if(sel.value=="Mauvais") sel.classList.add("mauvais"); }
+function ajouter(){ creerLigne({}); calculer(); sauvegarderMaintenant(); }
+function supprimer(btn){ if(confirm("Supprimer ce client ?")){ btn.closest("tr").remove(); calculer(); sauvegarderMaintenant(); } }
+
+/* ===== CALCULER ===== */
+function calculer(){
+let rows=document.querySelectorAll("#table tr");
+let capital=Number(document.getElementById("capital").value||0);
+let pourcGlobal=Number(document.getElementById("pourcGlobal").value||30);
+let taux=Number(document.getElementById("taux").value||2800);
+let enFranc=document.getElementById("afficherFranc").checked;
+let totPrete=0, totProfit=0, totRemb=0, totPaye=0, totReste=0;
+let nbPaye=0, nbNon=0, nbRetard=0;
+let aujourd=new Date(); aujourd.setHours(0,0,0,0);
+for(let i=1;i<rows.length;i++){
+let r=rows[i];
+let montant=Number(r.querySelector(".montant").value||0);
+let pourc=Number(r.querySelector(".pourc").value||pourcGlobal);
+let paye=Number(r.querySelector(".paye").value||0);
+let profit=Math.round(montant*pourc/100);
+let remb=montant+profit;
+let reste=remb-paye;
+r.querySelector(".profit").innerText=profit;
+r.querySelector(".remb").innerText=remb;
+r.querySelector(".reste").innerText=reste;
+r.querySelector(".reste").style.color=reste<=0?"green":"red";
+let statut=r.querySelector(".statut").value;
+if(statut=="Payé") nbPaye++; else nbNon++;
+let lim=r.querySelector(".dateLimite").value;
+let alerteCell=r.querySelector(".alerte");
+let enRetard=false;
+if(lim && reste>0){ let dLim=new Date(lim); if(dLim<aujourd){ enRetard=true; } }
+if(enRetard){ alerteCell.innerHTML='<span class="badgeRetard">⚠️ EN RETARD</span>'; r.classList.add("retard"); nbRetard++; }
+else if(reste<=0){ alerteCell.innerHTML='<span class="badgeOK">✅ OK</span>'; r.classList.remove("retard"); }
+else { alerteCell.innerHTML='-'; r.classList.remove("retard"); }
+totPrete+=montant; totProfit+=profit; totRemb+=remb; totPaye+=paye; totReste+=reste;
+}
+let fmt = enFranc ? (v=>"Fc "+Math.round(v*taux).toLocaleString('fr-FR')) : (v=>"$ "+v);
+document.getElementById("dClients").innerText=rows.length-1;
+document.getElementById("dPaye").innerText=nbPaye;
+document.getElementById("dNonPaye").innerText=nbNon;
+document.getElementById("dRetard").innerText=nbRetard;
+document.getElementById("tPrete").innerText=fmt(totPrete);
+document.getElementById("tProfit").innerText=fmt(totProfit);
+document.getElementById("tReste").innerText=fmt(totReste);
+document.getElementById("tRemb").innerText=fmt(totRemb);
+document.getElementById("tCapital").innerText=fmt(capital+totProfit);
+document.getElementById("ftPrete").innerText=fmt(totPrete);
+document.getElementById("ftProfit").innerText=fmt(totProfit);
+document.getElementById("ftRemb").innerText=fmt(totRemb);
+document.getElementById("ftPaye").innerText=fmt(totPaye);
+document.getElementById("ftReste").innerText=fmt(totReste);
+let ev=document.getElementById("evolCapital");
+ev.innerText=totProfit>0?"📈 CAPITAL AGRANDIT + "+fmt(totProfit):"— CAPITAL STABLE";
+dessinerGraph(totPrete, totProfit, totReste);
+sauvegardeDifferee();
+}
+function dessinerGraph(prete, profit, reste){
+let c=documevée</div>
 <div id="boxHistorique" style="display:none; background:white; padding:12px; border-radius:10px; margin-top:10px;">
 <b>📂 HISTORIQUE DES MOIS</b><br><br>
 <select id="selHistorique" onchange="voirMoisChoisi()" style="width:100%; padding:10px; border-radius:8px; font-weight:bold; margin-bottom:10px;">
